@@ -358,31 +358,31 @@ for i in range(len(t)):
 
 
 #---------------------BERECHNUNG DER ENDLAST ZUM GESAMTENERGIEBEDARF----------------------------------------------------------------
+#-----Kälte RuT gesamt ausgeben------------------------------------------------------------------------------
+RuT_kWh_k_nutz = sum(cool_data)
+RuT_GWh_k_nutz = sum(cool_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+RuT_kWh_k_end = sum(strom_k_end)
+RuT_GWh_k_end = sum(strom_k_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
 
-kWh_k_nutz = sum(cool_data)
-GWh_k_nutz = sum(cool_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
-kWh_k_end = sum(strom_k_end)
-GWh_k_end = sum(strom_k_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+#-----Wärme RuT gesamt ausgeben------------------------------------------------------------------------------
+RuT_kWh_w_nutz = sum(heat_data)
+RuT_GWh_w_nutz = sum(heat_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+RuT_kWh_w_end = sum(strom_w_end)
+RuT_GWh_w_end = sum(strom_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+RuT_kWH_w_end_kessel = sum(brennstoff_w_end)
+RuT_GWH_w_end_kessel = sum(brennstoff_w_end)/10**6
 
-#Wärme gesamt ausgeben
-kWh_w_nutz = sum(heat_data)
-GWh_w_nutz = sum(heat_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
-kWh_w_end = sum(strom_w_end)
-GWh_w_end = sum(strom_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
-kWH_w_end_kessel = sum(brennstoff_w_end)
-GWH_w_end_kessel = sum(brennstoff_w_end)/10**6
-
-#Strom gesamt ausgeben
-kWh_s_ges = sum(strom_electr_end)
-GWh_s_ges = sum(strom_electr_end)/10**6
+#-----Strom RuT gesamt ausgeben------------------------------------------------------------------------------
+RuT_kWh_s_ges = sum(strom_electr_end)
+RuT_GWh_s_ges = sum(strom_electr_end)/10**6
 
 #Gesamtenergiemenge ausgeben
-GWh_kum_ges = ((kWh_k_end + kWh_w_end + kWh_s_ges)/10**6)
+RuT_GWh_kum_ges = ((RuT_kWh_k_end + RuT_kWh_w_end + RuT_kWh_s_ges)/10**6)
 
 #Durchschnittswerte der Effizienz
 cop_avg = mean(cop_data)
 eer_avg = mean(eert_data)
-
+cop_kkm = 6.1
 
 
 
@@ -398,10 +398,10 @@ a3.metric("Mitarbeitende im Trockenraum", f"{round(MA_nach_Automatisierungsgrad(
 
 # Row B
 b1, b2, b3, b4 = st.columns(4)
-b1.metric("Nutz-Wärmebedarf des RuT",f"{round(GWh_w_nutz,3)} GWh/a")
-b2.metric("End-Wärmebedarf des RuT",f"{round(GWh_w_end,3)} GWh/a")
-b3.metric("Nutz-Kältelast der Gigafactory",f"{round((GWh_k_nutz+Prozess_Kaeltelast(production_capacity)),3)} GWh/a")
-b4.metric("Nutz-Kältelast der Gigafactory",f"{round((GWh_k_nutz+Prozess_Kaeltelast(production_capacity)),3)} GWh/a")
+b1.metric("Nutz-Wärmebedarf des RuT",f"{round(RuT_GWh_w_nutz,3)} GWh/a")
+b2.metric("End-Wärmebedarf des RuT",f"{round(RuT_GWh_w_end,3)} GWh/a")
+b3.metric("Nutz-Kältelast der Gigafactory",f"{round((RuT_GWh_k_nutz+Prozess_Kaeltelast(production_capacity)),3)} GWh/a")
+b4.metric("End-Kältelast der Gigafactory",f"{round(RuT_GWh_k_end+(strom_eert(eer_avg, Prozess_Kaeltelast(production_capacity))),3)} GWh/a")
 
 # Row C
 c1, c2 = st.columns((7,3))
