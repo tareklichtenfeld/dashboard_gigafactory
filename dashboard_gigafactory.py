@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import plost
 from PIL import Image
-import plotly.express as px
 from statistics import mean
 from datetime import datetime
 import matplotlib.pyplot as plt
