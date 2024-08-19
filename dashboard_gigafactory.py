@@ -21,10 +21,10 @@ st.sidebar.header('Dashboard `Skalierbare Gigafactory`')
 st.sidebar.subheader('Wählbare Planungsparameter')
 location = st.sidebar.selectbox('Standort', ('Deutschland', 'Norwegen', 'Texas, USA', 'Mexiko', 'Chile', 'Brasilien', 'Katar' ))
 production_capacity= st.sidebar.slider('Produktionskapazität in GWh/a', 2, 200, 40)
-energy_concept = st.sidebar.selectbox('Energiekonzept', ('Erdgas-Kessel', 'Blockheizkraftwerk', 'Wärmepumpe', 'Kombi-Wärmepumpe')) 
 cell_format = st.sidebar.selectbox('Zellformat', ('Pouch', 'Rund', 'Prismatisch'))
 production_setup = st.sidebar.selectbox('Art der Fertigung',('State of the Art','Next Gen'))
 automation_degree = st.sidebar.selectbox('Automatisierungsgrad',('Niedrig','Mittel','Hoch'))
+energy_concept = st.sidebar.selectbox('Energiekonzept', ('Erdgas-Kessel', 'Blockheizkraftwerk', 'Wärmepumpe', 'Kombi-Wärmepumpe')) 
 
 
 st.sidebar.markdown('''
