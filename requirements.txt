@@ -5,3 +5,7 @@ altair<5
 meteostat
 statistics
 numpy
+PIL
+numpy
+setuptools
+protobuf==3.20.3
