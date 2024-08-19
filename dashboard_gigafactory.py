@@ -180,7 +180,24 @@ def MA_nach_Automatisierungsgrad(x2):
 
 
 #-----PROZESSENERGIE--------------------------------------------------------
-
+#-----Elektrische Last--------------------------------------------
+def Prozess_Stromlast(x):
+    if cell_format == 'Pouch':
+        return 25.86493*x
+    if cell_format == 'Rund':
+        return 26.59484*x
+    if cell_format == 'Prismatisch':
+        return 29.58601*x
+    
+#-----Kälte-Nutzlast--------------------------------------------
+def Prozess_Kaeltelast(x):
+    if cell_format == 'Pouch':
+        return 8.14149*x
+    if cell_format == 'Rund':
+        return 9.60784*x
+    if cell_format == 'Prismatisch':
+        return 13.00309*x
+    
 
 #-----REIN-UND TROCKENRAUM--------------------------------------------------
 #-----absolute Feuchte----------------------------------------
@@ -381,10 +398,10 @@ a3.metric("Mitarbeitende im Trockenraum", f"{round(MA_nach_Automatisierungsgrad(
 
 # Row B
 b1, b2, b3, b4 = st.columns(4)
-b1.metric("Name der Wetterstation", f"{station_name}")
-b2.metric("Nutz-Wärmebedarf des RuT",f"{round(GWh_w_nutz,3)} GWh/a")
-b3.metric("End-Wärmebedarf des RuT",f"{round(GWh_w_end,3)} GWh/a")
-b4.metric("Testblock", "100 Mio €", "4%")
+b1.metric("Nutz-Wärmebedarf des RuT",f"{round(GWh_w_nutz,3)} GWh/a")
+b2.metric("End-Wärmebedarf des RuT",f"{round(GWh_w_end,3)} GWh/a")
+b3.metric("Nutz-Kältelast der Gigafactory",f"{round((GWh_k_nutz+Prozess_Kaeltelast(production_capacity)),3)} GWh/a")
+b4.metric("Nutz-Kältelast der Gigafactory",f"{round((GWh_k_nutz+Prozess_Kaeltelast(production_capacity)),3)} GWh/a")
 
 # Row C
 c1, c2 = st.columns((7,3))
