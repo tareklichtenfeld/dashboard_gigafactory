@@ -300,13 +300,23 @@ def brennwertkessel_wirkungsgrad(heat):
     return(end_waermelast)
 
 #-----Konzept 2 - BHKW--------------------------------------------------
+def bhkw_wirkungsgrad(x):
+    n = 0.44
+    return x/n
+
 #-----Konzept 3 - Wärmepumpe--------------------------------------------
 def strom_cop(n_c, waerme):
     end_waermeleistung = waerme/n_c
     return(end_waermeleistung)
 
 #-----Konzept 4 - Kombi-WP----------------------------------------------
+def kombi_wp_w_end(x):
+    cop_kwp=5.7396
+    return x/cop_kwp
 
+def kombi_wp_k_end(x):
+    cop_kkm=6.1
+    return x/cop_kkm
 
 
 
@@ -368,7 +378,7 @@ RuT_kWh_k_nutz = sum(cool_data)
 RuT_GWh_k_nutz = sum(cool_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
 if energy_concept == 'Kombi-Wärmepumpe':
     RuT_kWh_k_end = sum(strom_wp_k_end)
-    RuT_GWh_k_end = sum(strom_wp_k_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+    RuT_GWh_k_end = kombi_wp_k_end(RuT_GWh_k_nutz)
 else:
     RuT_kWh_k_end = sum(strom_wp_k_end)
     RuT_GWh_k_end = sum(strom_wp_k_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
@@ -376,19 +386,23 @@ else:
 #-----Wärme RuT gesamt ausgeben--------------------------------------------------------------------------
 RuT_kWh_w_nutz = sum(heat_data)
 RuT_GWh_w_nutz = sum(heat_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
-if energy_concept == 'Wärmepumpe':
-    RuT_kWh_w_end = sum(strom_wp_w_end)
-    RuT_GWh_w_end = sum(strom_wp_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+
 if energy_concept == 'Erdgas-Kessel':
-    RuT_kWh_w_end = sum(brennstoff_w_end)
     RuT_GWh_w_end = sum(brennstoff_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+if energy_concept == 'Blockheizkraftwerk':
+    RuT_GWh_w_end = sum(brennstoff_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+if energy_concept == 'Wärmepumpe':
+    RuT_GWh_w_end = sum(strom_wp_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+if energy_concept == 'Kombi-Wärmepumpe':
+    RuT_GWh_w_end = kombi_wp_w_end(RuT_GWh_w_nutz)
+
 
 #-----Strom RuT gesamt ausgeben--------------------------------------------------------------------------
 RuT_kWh_s_ges = sum(strom_electr_end)
 RuT_GWh_s_ges = sum(strom_electr_end)/10**6
 
 #------Gesamtenergiemenge RuT ausgeben-------------------------------------------------------------------
-RuT_GWh_kum_ges = ((RuT_kWh_k_end + RuT_kWh_w_end + RuT_kWh_s_ges)/10**6)
+RuT_GWh_kum_ges = (RuT_GWh_k_end + RuT_GWh_w_end + RuT_GWh_s_ges)
 
 #------GEBÄUDETECHNIK------------------------------------------------------------------------------------------------
 RLT_GWh_k_nutz = RLT_Kaeltelast(production_capacity)
