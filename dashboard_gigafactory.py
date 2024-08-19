@@ -125,8 +125,8 @@ cool_data = []
 heat_data = []
 cop_data = []
 eert_data = []
-strom_k_end = []
-strom_w_end = []
+strom_wp_k_end = []
+strom_wp_w_end = []
 brennstoff_w_end = []
 strom_electr_end = []
 
@@ -345,11 +345,11 @@ for i in range(len(t)):
     heat_data.append(heat_val)
     
     #End-Kühlleistung berechnen
-    strom_k_end.append(strom_eert(eert_val, cool_val))
+    strom_wp_k_end.append(strom_eert(eert_val, cool_val))
     
     #Wärmepumpe
     #End-Wärmeleistung berechnen
-    strom_w_end.append(strom_cop(cop_val, heat_val))
+    strom_wp_w_end.append(strom_cop(cop_val, heat_val))
     
     #Brennwertkessel
     brennstoff_w_end.append(brennwertkessel_wirkungsgrad(heat_val))
@@ -366,16 +366,22 @@ for i in range(len(t)):
 #-----Kälte RuT gesamt ausgeben-------------------------------------------------------------------------
 RuT_kWh_k_nutz = sum(cool_data)
 RuT_GWh_k_nutz = sum(cool_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
-RuT_kWh_k_end = sum(strom_k_end)
-RuT_GWh_k_end = sum(strom_k_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+if energy_concept == 'Kombi-Wärmepumpe':
+    RuT_kWh_k_end = sum(strom_wp_k_end)
+    RuT_GWh_k_end = sum(strom_wp_k_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+else:
+    RuT_kWh_k_end = sum(strom_wp_k_end)
+    RuT_GWh_k_end = sum(strom_wp_k_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
 
 #-----Wärme RuT gesamt ausgeben--------------------------------------------------------------------------
 RuT_kWh_w_nutz = sum(heat_data)
 RuT_GWh_w_nutz = sum(heat_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
-RuT_kWh_w_end = sum(strom_w_end)
-RuT_GWh_w_end = sum(strom_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
-RuT_kWH_w_end_kessel = sum(brennstoff_w_end)
-RuT_GWH_w_end_kessel = sum(brennstoff_w_end)/10**6
+if energy_concept == 'Wärmepumpe':
+    RuT_kWh_w_end = sum(strom_wp_w_end)
+    RuT_GWh_w_end = sum(strom_wp_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+if energy_concept == 'Erdgas-Kessel':
+    RuT_kWh_w_end = sum(brennstoff_w_end)
+    RuT_GWh_w_end = sum(brennstoff_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
 
 #-----Strom RuT gesamt ausgeben--------------------------------------------------------------------------
 RuT_kWh_s_ges = sum(strom_electr_end)
@@ -389,6 +395,10 @@ RLT_GWh_k_nutz = RLT_Kaeltelast(production_capacity)
 RLT_GWh_w_nutz = RLT_Waermelast(production_capacity)
 RLT_GWh_s_nutz = RLT_Stromlast(production_capacity)
 
+
+RLT_GWh_k_end = RLT_Kaeltelast(production_capacity)
+RLT_GWh_w_end = RLT_Waermelast(production_capacity)
+RLT_GWh_s_end = RLT_Stromlast(production_capacity)
 
 #Durchschnittswerte der Effizienz
 cop_avg = mean(cop_data)
@@ -421,19 +431,19 @@ a3.metric("Gesamt-Nutzenergiebedarf der Gigafactory", f"{round(gesamtfabrik_ges_
 
 #-----Row B-----------------------------------------------------------------
 b1, b2, b3, b4 = st.columns(4)
-b1.metric("Nutz-Wärmebedarf des RuT",f"{round(RuT_GWh_w_nutz,2)} GWh/a")
-b2.metric("End-Wärmebedarf des RuT",f"{round(RuT_GWh_w_end,2)} GWh/a")
-b3.metric("Nutz-Kältelast der Gigafactory",f"{round((RuT_GWh_k_nutz+Prozess_Kaeltelast(production_capacity)+RLT_GWh_k_nutz),2)} GWh/a")
-b4.metric("End-Kältelast der Gigafactory",f"{round(RuT_GWh_k_end+(strom_eert(eer_avg, Prozess_Kaeltelast(production_capacity)))+(strom_eert(eer_avg, RLT_GWh_k_nutz)),2)} GWh/a")
+b1.metric("Nutz-Wärmelast des Gigafactory",f"{round(gesamtfabrik_w_nutz,2)} GWh/a")
+b2.metric("End-Wärmebedarf der Gigafactory",f"{round(gesamtfabrik_w_end,2)} GWh/a")
+b3.metric("Nutz-Kältelast der Gigafactory",f"{round(gesamtfabrik_k_nutz,2)} GWh/a")
+b4.metric("End-Kältelast der Gigafactory",f"{round(gesamtfabrik_k_end,2)} GWh/a")
 
 #-----Row C-----------------------------------------------------------------
 Nutzlastdiagramm = pd.DataFrame({
-    "a": ["Nutz-Wärmelast","Nutz-Kältelast", "Stromlast"],
+    "a": ["Nutz-Kältelast","Nutz-Wärmelast", "Stromlast"],
     "b": [ gesamtfabrik_k_nutz, gesamtfabrik_w_nutz, gesamtfabrik_s],
 })
 
 Endlastdiagramm = pd.DataFrame({
-    "c": ["End-Wärmelast","End-Kältelast", "Stromlast"],
+    "c": ["End-Kältelast","End-Wärmelast", "Stromlast"],
     "d": [ gesamtfabrik_k_end, gesamtfabrik_w_end, gesamtfabrik_s],
 })
 
