@@ -384,7 +384,7 @@ b1, b2, b3, b4 = st.columns(4)
 b1.metric("Name der Wetterstation", f"{station_name}")
 b2.metric("Nutz-Wärmebedarf des RuT",f"{round(GWh_w_nutz,3)} GWh/a")
 b3.metric("End-Wärmebedarf des RuT",f"{round(GWh_w_end,3)} GWh/a")
-b4.metric("Humidity", "86%", "4%")
+b4.metric("Testblock", "100 Mio €", "4%")
 
 # Row C
 c1, c2 = st.columns((7,3))
