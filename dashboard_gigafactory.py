@@ -444,6 +444,7 @@ with c1:
         data=Nutzlastdiagramm,
         theta="b",
         color="a",
+        height=350
     )
 with c2:
     st.markdown("**Anteile der Endlast**")
@@ -451,6 +452,7 @@ with c2:
         data=Endlastdiagramm,
         theta="d",
         color="c",
+        height=350
     )
 
 
