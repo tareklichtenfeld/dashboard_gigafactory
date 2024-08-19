@@ -393,15 +393,15 @@ stocks = pd.read_csv('https://raw.githubusercontent.com/dataprofessor/data/maste
 # Row A
 a1, a2, a3 = st.columns(3)
 a1.image(Image.open('streamlit-logo-secondary-colormark-darktext.png'))
-a2.metric("Anschlussleistung", f"{round(Anschlussleistung(production_capacity),3)} MW")
+a2.metric("Anschlussleistung", f"{round(Anschlussleistung(production_capacity),2)} MW")
 a3.metric("Mitarbeitende im Trockenraum", f"{round(MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format)),0)} MA")
 
 # Row B
 b1, b2, b3, b4 = st.columns(4)
-b1.metric("Nutz-Wärmebedarf des RuT",f"{round(RuT_GWh_w_nutz,3)} GWh/a")
-b2.metric("End-Wärmebedarf des RuT",f"{round(RuT_GWh_w_end,3)} GWh/a")
-b3.metric("Nutz-Kältelast der Gigafactory",f"{round((RuT_GWh_k_nutz+Prozess_Kaeltelast(production_capacity)),3)} GWh/a")
-b4.metric("End-Kältelast der Gigafactory",f"{round(RuT_GWh_k_end+(strom_eert(eer_avg, Prozess_Kaeltelast(production_capacity))),3)} GWh/a")
+b1.metric("Nutz-Wärmebedarf des RuT",f"{round(RuT_GWh_w_nutz,2)} GWh/a")
+b2.metric("End-Wärmebedarf des RuT",f"{round(RuT_GWh_w_end,2)} GWh/a")
+b3.metric("Nutz-Kältelast der Gigafactory",f"{round((RuT_GWh_k_nutz+Prozess_Kaeltelast(production_capacity)),2)} GWh/a")
+b4.metric("End-Kältelast der Gigafactory",f"{round(RuT_GWh_k_end+(strom_eert(eer_avg, Prozess_Kaeltelast(production_capacity))),2)} GWh/a")
 
 # Row C
 c1, c2 = st.columns((7,3))
