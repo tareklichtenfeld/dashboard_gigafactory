@@ -130,34 +130,38 @@ strom_w_end = []
 brennstoff_w_end = []
 strom_electr_end = []
 
-
-
-
-
+# make list with hours--------------------------------------
+station_time_data = list(range(len(t)))
+print(station_time_data)
+print(t)
 
 
 #---------------------------FORMULAS----------------------------------------------------------------------------
 
-#-----Anschlussleistung (Test für Finn)-------------------------
+#-----Anschlussleistung (Demo für Finn)-------------------------
 def Anschlussleistung(x):
     return x*6.25
 
-#-----MITARBEITENDE---------------------------------------------------------
-#MA pro GWh
+#-----RLT/HVAC Energieverbrauch-------------------------------------------------
+#-----RLT Kältelast---------------------------------------------
+def RLT_Kaeltelast(x):
+    return 1.920*x
+    
+#-----RLT Wärmelast---------------------------------------------
+def RLT_Waermelast(x):
+    return 0.6867*x
+
+#-----RLT Stromlast---------------------------------------------
+def RLT_Stromlast(x):
+    return 1.529*x
+
+
+#-----MITARBEITENDE-----------------------------------------------------------
+#MA pro GWh!!!!!!!!!!!!!!!!!!!!!
 def MA_pro_GWh(x):
     return x
 
-#MA in RuT nach Produktionskapazität (längere Formel)--------
-#def MA_in_RuT(x):
-    if cell_format == 'Pouch':
-        return x*27*0.83
-    if cell_format == 'Rund':
-        return x*27
-    if cell_format == 'Prismatisch':
-        return x*27*1.225
-    else:
-        return x*27
-
+# a3.metric("Mitarbeitende im Trockenraum", f"{round(MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format)),0)} MA")
 #MA in RuT nach Produktionskapazität-------------------------
 def MA_in_RuT(x, cell_format):
     factors = {
@@ -358,13 +362,14 @@ for i in range(len(t)):
 
 
 #---------------------BERECHNUNG DER ENDLAST ZUM GESAMTENERGIEBEDARF----------------------------------------------------------------
-#-----Kälte RuT gesamt ausgeben------------------------------------------------------------------------------
+#-----REIN_ UND TROCKENRAUM--------------------------------------------------------------------------------------------
+#-----Kälte RuT gesamt ausgeben-------------------------------------------------------------------------
 RuT_kWh_k_nutz = sum(cool_data)
 RuT_GWh_k_nutz = sum(cool_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
 RuT_kWh_k_end = sum(strom_k_end)
 RuT_GWh_k_end = sum(strom_k_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
 
-#-----Wärme RuT gesamt ausgeben------------------------------------------------------------------------------
+#-----Wärme RuT gesamt ausgeben--------------------------------------------------------------------------
 RuT_kWh_w_nutz = sum(heat_data)
 RuT_GWh_w_nutz = sum(heat_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
 RuT_kWh_w_end = sum(strom_w_end)
@@ -372,12 +377,18 @@ RuT_GWh_w_end = sum(strom_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT
 RuT_kWH_w_end_kessel = sum(brennstoff_w_end)
 RuT_GWH_w_end_kessel = sum(brennstoff_w_end)/10**6
 
-#-----Strom RuT gesamt ausgeben------------------------------------------------------------------------------
+#-----Strom RuT gesamt ausgeben--------------------------------------------------------------------------
 RuT_kWh_s_ges = sum(strom_electr_end)
 RuT_GWh_s_ges = sum(strom_electr_end)/10**6
 
-#Gesamtenergiemenge ausgeben
+#------Gesamtenergiemenge RuT ausgeben-------------------------------------------------------------------
 RuT_GWh_kum_ges = ((RuT_kWh_k_end + RuT_kWh_w_end + RuT_kWh_s_ges)/10**6)
+
+#------GEBÄUDETECHNIK------------------------------------------------------------------------------------------------
+RLT_GWh_k_nutz = RLT_Kaeltelast(production_capacity)
+RLT_GWh_w_nutz = RLT_Waermelast(production_capacity)
+RLT_GWh_s_nutz = RLT_Stromlast(production_capacity)
+
 
 #Durchschnittswerte der Effizienz
 cop_avg = mean(cop_data)
@@ -385,19 +396,63 @@ eer_avg = mean(eert_data)
 cop_kkm = 6.1
 
 
+#-----------GESAMTFACTORY ENERGIEVERBRÄUCHE---------------------------------------------------------------------------
+#-----Nutzlast Gesamtfabrik---------------------------------------------------
+gesamtfabrik_k_nutz = (RuT_GWh_k_nutz+Prozess_Kaeltelast(production_capacity)+RLT_GWh_k_nutz)
+gesamtfabrik_w_nutz = (RuT_GWh_w_nutz+RLT_GWh_w_nutz)
+gesamtfabrik_s = (RuT_GWh_s_ges+Prozess_Stromlast(production_capacity)+RLT_GWh_s_nutz)
+
+gesamtfabrik_ges_nutz = gesamtfabrik_k_nutz + gesamtfabrik_w_nutz + gesamtfabrik_s
+
+#-----Endlast Gesamtfabrik----------------------------------------------------
+gesamtfabrik_k_end = RuT_GWh_k_end+(strom_eert(eer_avg, Prozess_Kaeltelast(production_capacity)))+(strom_eert(eer_avg, RLT_GWh_k_nutz))
+gesamtfabrik_w_end = RuT_GWh_w_end+(strom_cop(cop_avg, RLT_GWh_k_nutz))
+gesamtfabrik_s = (RuT_GWh_s_ges+Prozess_Stromlast(production_capacity)+RLT_GWh_s_nutz)
+
+gesamtfabrik_ges_end = gesamtfabrik_k_end + gesamtfabrik_w_end + gesamtfabrik_s
+
 
 #--------------------DATA VISUALIZER-----------------------------------------------------------------------------------
-# Row A
+#-----Row A-----------------------------------------------------------------
 a1, a2, a3 = st.columns(3)
 a1.image(Image.open('streamlit-logo-secondary-colormark-darktext.png'))
 a2.metric("Anschlussleistung", f"{round(Anschlussleistung(production_capacity),2)} MW")
-a3.metric("Mitarbeitende im Trockenraum", f"{round(MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format)),0)} MA")
+a3.metric("Gesamt-Nutzenergiebedarf der Gigafactory", f"{round(gesamtfabrik_ges_nutz,2)} GWh/a")
 
-# Row B
+#-----Row B-----------------------------------------------------------------
 b1, b2, b3, b4 = st.columns(4)
 b1.metric("Nutz-Wärmebedarf des RuT",f"{round(RuT_GWh_w_nutz,2)} GWh/a")
 b2.metric("End-Wärmebedarf des RuT",f"{round(RuT_GWh_w_end,2)} GWh/a")
-b3.metric("Nutz-Kältelast der Gigafactory",f"{round((RuT_GWh_k_nutz+Prozess_Kaeltelast(production_capacity)),2)} GWh/a")
-b4.metric("End-Kältelast der Gigafactory",f"{round(RuT_GWh_k_end+(strom_eert(eer_avg, Prozess_Kaeltelast(production_capacity))),2)} GWh/a")
+b3.metric("Nutz-Kältelast der Gigafactory",f"{round((RuT_GWh_k_nutz+Prozess_Kaeltelast(production_capacity)+RLT_GWh_k_nutz),2)} GWh/a")
+b4.metric("End-Kältelast der Gigafactory",f"{round(RuT_GWh_k_end+(strom_eert(eer_avg, Prozess_Kaeltelast(production_capacity)))+(strom_eert(eer_avg, RLT_GWh_k_nutz)),2)} GWh/a")
 
-# Row C
+#-----Row C-----------------------------------------------------------------
+Nutzlastdiagramm = pd.DataFrame({
+    "a": ["Nutz-Wärmelast","Nutz-Kältelast", "Stromlast"],
+    "b": [ gesamtfabrik_k_nutz, gesamtfabrik_w_nutz, gesamtfabrik_s],
+})
+
+Endlastdiagramm = pd.DataFrame({
+    "c": ["End-Wärmelast","End-Kältelast", "Stromlast"],
+    "d": [ gesamtfabrik_k_end, gesamtfabrik_w_end, gesamtfabrik_s],
+})
+
+c1, c2= st.columns(2)
+with c1:
+    st.markdown("**Anteile der Nutzlast**")
+    plost.donut_chart(
+        data=Nutzlastdiagramm,
+        theta="b",
+        color="a",
+    )
+with c2:
+    st.markdown("**Anteile der Endlast**")
+    plost.donut_chart(
+        data=Endlastdiagramm,
+        theta="d",
+        color="c",
+    )
+
+
+
+#--------------------------by tarek lichtenfeld, august 2024------------------------------------
