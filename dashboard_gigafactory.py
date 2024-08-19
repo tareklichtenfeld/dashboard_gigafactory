@@ -5,8 +5,7 @@ import plost
 from PIL import Image
 from statistics import mean
 from datetime import datetime
-import matplotlib.pyplot as plt
-from meteostat import Point, Daily, Hourly, Stations
+from meteostat import Hourly, Stations
 
 # Page setting
 st.set_page_config(page_title="Gigafactory-Skaleriungstool",
