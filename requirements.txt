@@ -10,7 +10,7 @@ setuptools
 protobuf==3.20.3
 Pillow
 sankeyflow
-Modal
-matplotlib.pyplot
+streamlit_modal
+matplotlib
 io
-streamlit_extras.stylable_container
+streamlit_extras
