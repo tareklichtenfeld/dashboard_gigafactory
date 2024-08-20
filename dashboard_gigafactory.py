@@ -87,7 +87,7 @@ ypoints = []
 for station_name, station_id in stat:
   # Download hourly data for a specific date range (adjust dates as needed)
   start_date = datetime(2023, 1, 1)  # Change year, month, day as needed
-  end_date = datetime(2024, 1, 1)  # Change year, month, day as needed
+  end_date = datetime(2023, 12, 31)  # Change year, month, day as needed
   data = Hourly(f"{station_id}", start_date, end_date)
   data = data.fetch()
 
@@ -104,7 +104,7 @@ ypoints = []
 for station_name, station_id in stat:
   # Download hourly data for a specific date range (adjust dates as needed)
   start_date = datetime(2023, 1, 1)  # Change year, month, day as needed
-  end_date = datetime(2024, 1, 1)  # Change year, month, day as needed
+  end_date = datetime(2023, 12, 31)  # Change year, month, day as needed
   data = Hourly(f"{station_id}", start_date, end_date)
   data = data.fetch()
 
