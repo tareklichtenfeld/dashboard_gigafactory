@@ -185,7 +185,7 @@ def MA_nach_Automatisierungsgrad(x2):
 
 #-----PROZESSENERGIE--------------------------------------------------------
 #-----Elektrische Last--------------------------------------------
-def Prozess_Stromlast(x):
+def Prozess_Stromnutzlast(x):
     if cell_format == 'Pouch':
         return 25.86493*x
     if cell_format == 'Rund':
@@ -194,7 +194,7 @@ def Prozess_Stromlast(x):
         return 29.58601*x
     
 #-----Kälte-Nutzlast--------------------------------------------
-def Prozess_Kaeltelast(x):
+def Prozess_Kaeltenutzlast(x):
     if cell_format == 'Pouch':
         return 8.14149*x
     if cell_format == 'Rund':
@@ -300,8 +300,12 @@ def brennwertkessel_wirkungsgrad(heat):
     return(end_waermelast)
 
 #-----Konzept 2 - BHKW--------------------------------------------------
-def bhkw_wirkungsgrad(x):
-    n = 0.44
+def bhkw_w_wirkungsgrad(x):
+    n = 0.9
+    return x/n
+
+def bhkw_s_wirkungsgrad(x):
+    n = 0.05
     return x/n
 
 #-----Konzept 3 - Wärmepumpe--------------------------------------------
@@ -317,11 +321,6 @@ def kombi_wp_w_end(x):
 def kombi_wp_k_end(x):
     cop_kkm=6.1
     return x/cop_kkm
-
-
-
-
-
 
 
 #---------------------DURCHLAUFEN DER FORMELN ZUR BESTIMMUNG DES LASTVERLAUFS------------------------------------------------------
@@ -390,7 +389,7 @@ RuT_GWh_w_nutz = sum(heat_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(
 if energy_concept == 'Erdgas-Kessel':
     RuT_GWh_w_end = sum(brennstoff_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
 if energy_concept == 'Blockheizkraftwerk':
-    RuT_GWh_w_end = sum(brennstoff_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+    RuT_GWh_w_end = bhkw_w_wirkungsgrad(RuT_GWh_w_nutz)
 if energy_concept == 'Wärmepumpe':
     RuT_GWh_w_end = sum(strom_wp_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
 if energy_concept == 'Kombi-Wärmepumpe':
@@ -399,10 +398,15 @@ if energy_concept == 'Kombi-Wärmepumpe':
 
 #-----Strom RuT gesamt ausgeben--------------------------------------------------------------------------
 RuT_kWh_s_ges = sum(strom_electr_end)
-RuT_GWh_s_ges = sum(strom_electr_end)/10**6
+RuT_GWh_s_ges = sum(strom_electr_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+
+if energy_concept == 'Blockheizkraftwerk':
+    RuT_GWh_s_end = RuT_GWh_s_ges - bhkw_s_wirkungsgrad(RuT_GWh_s_ges)
+else:
+    RuT_GWh_s_end = RuT_GWh_s_ges
 
 #------Gesamtenergiemenge RuT ausgeben-------------------------------------------------------------------
-RuT_GWh_kum_ges = (RuT_GWh_k_end + RuT_GWh_w_end + RuT_GWh_s_ges)
+RuT_GWh_kum_ges = (RuT_GWh_k_end + RuT_GWh_w_end + RuT_GWh_s_end)
 
 #------GEBÄUDETECHNIK------------------------------------------------------------------------------------------------
 RLT_GWh_k_nutz = RLT_Kaeltelast(production_capacity)
@@ -422,18 +426,18 @@ cop_kkm = 6.1
 
 #-----------GESAMTFACTORY ENERGIEVERBRÄUCHE---------------------------------------------------------------------------
 #-----Nutzlast Gesamtfabrik---------------------------------------------------
-gesamtfabrik_k_nutz = (RuT_GWh_k_nutz+Prozess_Kaeltelast(production_capacity)+RLT_GWh_k_nutz)
+gesamtfabrik_k_nutz = (RuT_GWh_k_nutz+Prozess_Kaeltenutzlast(production_capacity)+RLT_GWh_k_nutz)
 gesamtfabrik_w_nutz = (RuT_GWh_w_nutz+RLT_GWh_w_nutz)
-gesamtfabrik_s = (RuT_GWh_s_ges+Prozess_Stromlast(production_capacity)+RLT_GWh_s_nutz)
+gesamtfabrik_s_nutz = (RuT_GWh_s_end+Prozess_Stromnutzlast(production_capacity)+RLT_GWh_s_nutz)
 
-gesamtfabrik_ges_nutz = gesamtfabrik_k_nutz + gesamtfabrik_w_nutz + gesamtfabrik_s
+gesamtfabrik_ges_nutz = gesamtfabrik_k_nutz + gesamtfabrik_w_nutz + gesamtfabrik_s_nutz
 
 #-----Endlast Gesamtfabrik----------------------------------------------------
-gesamtfabrik_k_end = RuT_GWh_k_end+(strom_eert(eer_avg, Prozess_Kaeltelast(production_capacity)))+(strom_eert(eer_avg, RLT_GWh_k_nutz))
+gesamtfabrik_k_end = RuT_GWh_k_end+(strom_eert(eer_avg, Prozess_Kaeltenutzlast(production_capacity)))+(strom_eert(eer_avg, RLT_GWh_k_nutz))
 gesamtfabrik_w_end = RuT_GWh_w_end+(strom_cop(cop_avg, RLT_GWh_k_nutz))
-gesamtfabrik_s = (RuT_GWh_s_ges+Prozess_Stromlast(production_capacity)+RLT_GWh_s_nutz)
+gesamtfabrik_s_end = (RuT_GWh_s_end+Prozess_Stromnutzlast(production_capacity)+RLT_GWh_s_nutz)
 
-gesamtfabrik_ges_end = gesamtfabrik_k_end + gesamtfabrik_w_end + gesamtfabrik_s
+gesamtfabrik_ges_end = gesamtfabrik_k_end + gesamtfabrik_w_end + gesamtfabrik_s_end
 
 
 #--------------------DATA VISUALIZER-----------------------------------------------------------------------------------
@@ -453,12 +457,12 @@ b4.metric("End-Kältelast der Gigafactory",f"{round(gesamtfabrik_k_end,2)} GWh/a
 #-----Row C-----------------------------------------------------------------
 Nutzlastdiagramm = pd.DataFrame({
     "a": ["Nutz-Kältelast","Nutz-Wärmelast", "Stromlast"],
-    "b": [ gesamtfabrik_k_nutz, gesamtfabrik_w_nutz, gesamtfabrik_s],
+    "b": [ gesamtfabrik_k_nutz, gesamtfabrik_w_nutz, gesamtfabrik_s_nutz],
 })
 
 Endlastdiagramm = pd.DataFrame({
     "c": ["End-Kältelast","End-Wärmelast", "Stromlast"],
-    "d": [ gesamtfabrik_k_end, gesamtfabrik_w_end, gesamtfabrik_s],
+    "d": [ gesamtfabrik_k_end, gesamtfabrik_w_end, gesamtfabrik_s_end],
 })
 
 c1, c2= st.columns(2)
@@ -478,7 +482,5 @@ with c2:
         color="c",
         height=350
     )
-
-
 
 #--------------------------by tarek lichtenfeld, august 2024------------------------------------
