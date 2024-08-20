@@ -13,4 +13,4 @@ sankeyflow
 Modal
 matplotlib.pyplot
 io
-streamlit_extras
+streamlit_extras.stylable_container
