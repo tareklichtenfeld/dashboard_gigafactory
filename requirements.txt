@@ -9,3 +9,9 @@ numpy
 setuptools
 protobuf==3.20.3
 Pillow
+sankeyflow
+streamlit_modal
+matplotlib.pyplot
+io
+streamlit_modal
+streamlit_extras
