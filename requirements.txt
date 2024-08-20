@@ -5,7 +5,6 @@ altair<5
 meteostat
 statistics
 numpy
-numpy
 setuptools
 protobuf==3.20.3
 Pillow
