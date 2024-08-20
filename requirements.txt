@@ -13,5 +13,4 @@ sankeyflow
 streamlit_modal
 matplotlib.pyplot
 io
-streamlit_modal
 streamlit_extras
