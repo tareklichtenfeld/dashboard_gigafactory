@@ -19,7 +19,7 @@ with open('style.css') as f:
 st.sidebar.header('Dashboard `Skalierbare Gigafactory`')
 
 st.sidebar.subheader('Wählbare Planungsparameter')
-location = st.sidebar.selectbox('Standort', ('Deutschland', 'Norwegen', 'Texas, USA', 'Mexiko', 'Chile', 'Brasilien', 'Katar' ))
+location = st.sidebar.selectbox('Standort', ('Deutschland', 'Norwegen', 'Texas, USA', 'Mexiko', 'Chile', 'Brasilien', 'Katar', 'Greenville' ))
 production_capacity= st.sidebar.slider('Produktionskapazität in GWh/a', 2, 150, 40)
 cell_format = st.sidebar.selectbox('Zellformat', ('Pouch', 'Rund', 'Prismatisch'))
 automation_degree = st.sidebar.selectbox('Automatisierungsgrad',('Niedrig','Mittel','Hoch'))
@@ -49,7 +49,8 @@ def get_coordinates(location):
         'Chile': (-22.46061693078931, -68.92687992157762),
         'Brasilien': (2.8168900489923048, -60.68063433499766),
         'Katar': (25.253853158779187, 51.34762132032399),
-        'Russland': (53.7057509164329, 91.39067030182092)
+        'Russland': (53.7057509164329, 91.39067030182092),
+        'Greenville': (34.849191725553155, -82.39028917600623)
     }
     return coordinates_dict.get(location, None)
 
@@ -72,7 +73,7 @@ ypoints = []
 for station_name, station_id in stat:
   # Download hourly data for a specific date range (adjust dates as needed)
   start_date = datetime(2023, 1, 1)  # Change year, month, day as needed
-  end_date = datetime(2024, 12, 31)  # Change year, month, day as needed
+  end_date = datetime(2023, 12, 31)  # Change year, month, day as needed
   data = Hourly(f"{station_id}", start_date, end_date)
   data = data.fetch()
 
@@ -435,7 +436,7 @@ gesamtfabrik_ges_nutz = gesamtfabrik_k_nutz + gesamtfabrik_w_nutz + gesamtfabrik
 #-----Endlast Gesamtfabrik----------------------------------------------------
 gesamtfabrik_k_end = RuT_GWh_k_end+(strom_eert(eer_avg, Prozess_Kaeltenutzlast(production_capacity)))+(strom_eert(eer_avg, RLT_GWh_k_nutz))
 gesamtfabrik_w_end = RuT_GWh_w_end+(strom_cop(cop_avg, RLT_GWh_k_nutz))
-gesamtfabrik_s_end = (RuT_GWh_s_end+Prozess_Stromnutzlast(production_capacity)+RLT_GWh_s_nutz)
+gesamtfabrik_s_end = (RuT_GWh_s_end+Prozess_Stromnutzlast(production_capacity)+RLT_GWh_s_end)
 
 gesamtfabrik_ges_end = gesamtfabrik_k_end + gesamtfabrik_w_end + gesamtfabrik_s_end
 
