@@ -602,9 +602,6 @@ def draw_sankey(df):
             diagram.draw()
             st.pyplot(plt)
             img = io.BytesIO()
-            for flow in diagram.flows:
-                x, y = flow.get_pos()
-                plt.annotate(f"{flow.value} GWh", xy=(x, y), ha='center', va='center', fontsize=8)
             plt.savefig(img, format="png")
             st.session_state.image = img
  

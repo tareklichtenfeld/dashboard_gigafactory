@@ -21,20 +21,32 @@ div.css-wnm74r.e16fv1kl3 {
   margin-right: 20%;
 }
 
+/* popup window */ 
+div.st-emotion-cache-jpcrdf.e1f1d6gn2 {
+  background-color: #fdff8c;
+  padding: 3% 3% 3% 3%;
+  border-width: 5px;
+  border-radius: 5px;
+  border-color: purple;
+}
+
 /* Row 1 */
-div.css-1r6slb0.e1tzin5v2 {
-    background-color: #87b7a8;
+div.st-emotion-cache-1r6slb0.e1f1d6gn3 {
+    background-color: #fdff8c;
     padding: 3% 3% 3% 3%;
-    border-radius: 5px;
+    border-width: 20px;
+    border-radius: 15px;
+    border-color: purple;
 }
 
 /* Row 2 */
-div.css-12w0qpk.e1tzin5v2 {
-    background-color: #87b7a8;
-    padding: 3% 3% 3% 3%;
-    border-radius: 5px;
+div.st-emotion-cache-12w0pqk.e1f1d6gn3 {
+  background-color: #fdff8c;
+  padding: 3% 3% 3% 3%;
+  border-width: 20px;
+  border-radius: 5px;
+  border-color: purple;
 }
-
 
 /* Hide hamburger menu and footer */
 div.css-r698ls.e8zbici2 {
