@@ -1,6 +1,6 @@
 /* Move block container higher */
-div.block-container.css-18e3th9.egzxvld2 {
-  margin-top: -5em;
+div.block-container.st-emotion-cache-1jicfl2.ea3mdgi5 {
+  margin-top: 1em;
 }
 
 /* Adjustments for the logo image*/
@@ -40,12 +40,19 @@ div.st-emotion-cache-1r6slb0.e1f1d6gn3 {
 }
 
 /* Row 2 */
-div.st-emotion-cache-12w0pqk.e1f1d6gn3 {
+div.st-emotion-cache-12w0qpk.e1f1d6gn3 {
   background-color: #fdff8c;
   padding: 3% 3% 3% 3%;
   border-width: 20px;
-  border-radius: 5px;
+  border-radius: 15px;
   border-color: purple;
+}
+
+/*Sankey Plot*/
+div.st-emotion-cache-1v0mbdj.e115fcil1 {
+  border-width: 20px;
+  border-radius: 15px;
+  border: purple;
 }
 
 /* Hide hamburger menu and footer */

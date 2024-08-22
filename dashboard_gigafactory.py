@@ -29,6 +29,7 @@ production_capacity= st.sidebar.slider('Produktionskapazität in GWh/a', 2, 150,
 cell_format = st.sidebar.selectbox('Zellformat', ('Pouch', 'Rund', 'Prismatisch'))
 automation_degree = st.sidebar.selectbox('Automatisierungsgrad',('Niedrig','Mittel','Hoch'))
 production_setup = st.sidebar.selectbox('Art der Fertigung',('State of the Art','Next Gen'))
+production_days = st.sidebar.slider('Produktionstage im Jahr', 1, 315, 310)
 energy_concept = st.sidebar.selectbox('Energiekonzept', ('Erdgas-Kessel', 'Blockheizkraftwerk', 'Wärmepumpe', 'Kombi-Wärmepumpe')) 
 
 
@@ -167,6 +168,7 @@ print(t)
 
 
 #---------------------------FORMULAS----------------------------------------------------------------------------
+production_day_factor = production_days/365
 
 #-----Anschlussleistung (Demo für Finn)-------------------------
 def Anschlussleistung(x):
@@ -216,21 +218,23 @@ def MA_nach_Automatisierungsgrad(x2):
 #-----PROZESSENERGIE--------------------------------------------------------
 #-----Elektrische Last--------------------------------------------
 def Prozess_Stromnutzlast(x):
+    day_factor=365/315
     if cell_format == 'Pouch':
-        return 25.86493*x
+        return 25.86493*x*day_factor
     if cell_format == 'Rund':
-        return 26.59484*x
+        return 26.59484*x*day_factor
     if cell_format == 'Prismatisch':
-        return 29.58601*x
+        return 29.58601*x*day_factor
     
 #-----Kälte-Nutzlast--------------------------------------------
 def Prozess_Kaeltenutzlast(x):
+    day_factor=365/315
     if cell_format == 'Pouch':
-        return 8.14149*x
+        return 8.14149*x*day_factor
     if cell_format == 'Rund':
-        return 9.60784*x
+        return 9.60784*x*day_factor
     if cell_format == 'Prismatisch':
-        return 13.00309*x
+        return 13.00309*x*day_factor
     
 
 #-----REIN-UND TROCKENRAUM--------------------------------------------------
@@ -406,32 +410,30 @@ cop_kkm = 6.1
 #---------------------BERECHNUNG DER ENDLAST ZUM GESAMTENERGIEBEDARF----------------------------------------------------------------
 #-----REIN_ UND TROCKENRAUM--------------------------------------------------------------------------------------------
 #-----Kälte RuT gesamt ausgeben-------------------------------------------------------------------------
-RuT_kWh_k_nutz = sum(cool_data)
-RuT_GWh_k_nutz = sum(cool_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+RuT_kWh_k_nutz = sum(cool_data)*production_day_factor
+RuT_GWh_k_nutz = sum(cool_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
 if energy_concept == 'Kombi-Wärmepumpe':
-    RuT_kWh_k_end = sum(strom_wp_k_end)
     RuT_GWh_k_end = kombi_wp_k_end(RuT_GWh_k_nutz)
 else:
-    RuT_kWh_k_end = sum(strom_wp_k_end)
-    RuT_GWh_k_end = sum(strom_wp_k_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+    RuT_GWh_k_end = sum(strom_wp_k_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
 
 #-----Wärme RuT gesamt ausgeben--------------------------------------------------------------------------
-RuT_kWh_w_nutz = sum(heat_data)
-RuT_GWh_w_nutz = sum(heat_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+RuT_kWh_w_nutz = sum(heat_data)*production_day_factor
+RuT_GWh_w_nutz = sum(heat_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
 
 if energy_concept == 'Erdgas-Kessel':
-    RuT_GWh_w_end = sum(brennstoff_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+    RuT_GWh_w_end = sum(brennstoff_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
 if energy_concept == 'Blockheizkraftwerk':
     RuT_GWh_w_end = bhkw_w_wirkungsgrad(RuT_GWh_w_nutz)
 if energy_concept == 'Wärmepumpe':
-    RuT_GWh_w_end = sum(strom_wp_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+    RuT_GWh_w_end = sum(strom_wp_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
 if energy_concept == 'Kombi-Wärmepumpe':
     RuT_GWh_w_end = kombi_wp_w_end(RuT_GWh_w_nutz)
 
 
 #-----Strom RuT gesamt ausgeben--------------------------------------------------------------------------
-RuT_kWh_s_nutz = sum(strom_electr_end)
-RuT_GWh_s_nutz = sum(strom_electr_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
+RuT_kWh_s_nutz = sum(strom_electr_end)*production_day_factor
+RuT_GWh_s_nutz = sum(strom_electr_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
 
 if energy_concept == 'Blockheizkraftwerk':
     RuT_GWh_s_end = RuT_GWh_s_nutz - bhkw_s_wirkungsgrad(RuT_GWh_s_nutz)
@@ -448,9 +450,9 @@ RuT_GWh_kum_ges = (RuT_GWh_k_end + RuT_GWh_w_end + RuT_GWh_s_end)
 
 #------GEBÄUDETECHNIK------------------------------------------------------------------------------------------------
 #-----Nutzlast-------------------------------------------------------------------------------------------
-RLT_GWh_k_nutz = RLT_Kaeltelast(production_capacity)
-RLT_GWh_w_nutz = RLT_Waermelast(production_capacity)
-RLT_GWh_s_nutz = RLT_Stromlast(production_capacity)
+RLT_GWh_k_nutz = RLT_Kaeltelast(production_capacity)*production_day_factor
+RLT_GWh_w_nutz = RLT_Waermelast(production_capacity)*production_day_factor
+RLT_GWh_s_nutz = RLT_Stromlast(production_capacity)*production_day_factor
 
 #-----Endwärme---------------------------------------------------------------------
 if energy_concept == 'Kombi-Wärmepumpe':
@@ -479,8 +481,8 @@ else:
 
 #-----PROZESSE-------------------------------------------------------------------------------------------
 #-----Nutzlast---------------------------------------------------------------------
-PRO_GWh_k_nutz = Prozess_Kaeltenutzlast(production_capacity)
-PRO_GWh_s_nutz = Prozess_Stromnutzlast(production_capacity)
+PRO_GWh_k_nutz = Prozess_Kaeltenutzlast(production_capacity)*production_day_factor
+PRO_GWh_s_nutz = Prozess_Stromnutzlast(production_capacity)*production_day_factor
 
 #-----Endkälte--------------------------------------------------------------------
 if energy_concept == 'Kombi-Wärmepumpe':
@@ -514,12 +516,17 @@ gesamtfabrik_s_end = (RuT_GWh_s_end+Prozess_Stromnutzlast(production_capacity)+R
 
 gesamtfabrik_ges_end = gesamtfabrik_k_end + gesamtfabrik_w_end + gesamtfabrik_s_end
 
+#-----Gesamtfabrik Daten & Werte----------------------------------------------
+energiefaktor = gesamtfabrik_ges_nutz/production_capacity
+
+
+
 
 #--------------------DATA VISUALIZER-----------------------------------------------------------------------------------
 #-----Row A-----------------------------------------------------------------
 a1, a2, a3 = st.columns(3)
 a1.image(Image.open('streamlit-logo-secondary-colormark-darktext.png'))
-a2.metric("Anschlussleistung", f"{round(Anschlussleistung(production_capacity),2)} MW")
+a2.metric("energy factor", f"{round(energiefaktor,2)} kWh/kWhcell")
 a3.metric("Gesamt-Nutzenergiebedarf der Gigafactory", f"{round(gesamtfabrik_ges_nutz,2)} GWh/a")
 
 #-----Row B-----------------------------------------------------------------
@@ -563,17 +570,17 @@ with c2:
     if energy_concept == "Erdgas-Kessel":
         df = pd.DataFrame(
             {
-                "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Natural Gas", "Building Technology", "Building Technology", "Building Technology","Electricity", "Natural Gas", "Dry Room","Dry Room", "Dry Room"],
-                "target": ["Manufacturing", "Electric Energy usage", "Cooling usage", "Building Technology", "Building Technology", "Cooling usage", "Electric Energy usage", "Heat usage", "Dry Room", "Dry Room", "Cooling usage", "Electric Energy usage", "Heat usage"],
+                "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Natural Gas", "Building", "Building", "Building","Electricity", "Natural Gas", "Dry Room","Dry Room", "Dry Room"],
+                "target": ["Manufacturing", "Electric Energy usage", "Cooling usage", "Building", "Building", "Cooling usage", "Electric Energy usage", "Heat usage", "Dry Room", "Dry Room", "Cooling usage", "Electric Energy usage", "Heat usage"],
                 "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end), RLT_GWh_w_end, RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end), RuT_GWh_w_end, RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
             }
         )
     if energy_concept == "Blockheizkraftwerk":
         df = pd.DataFrame(
             {
-                "source": ["Product", "Service and other", "Total revenue"],
-                "target": ["Total revenue", "Total revenue", "Gross margin"],
-                "value": [20779, 30949, 55],
+                "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Natural Gas", "Building", "Building", "Building","Electricity", "Natural Gas", "Dry Room","Dry Room", "Dry Room"],
+                "target": ["Manufacturing", "Electric Energy usage", "Cooling usage", "Building", "Building", "Cooling usage", "Electric Energy usage", "Heat usage", "Dry Room", "Dry Room", "Cooling usage", "Electric Energy usage", "Heat usage"],
+                "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end), RLT_GWh_w_end, RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end), RuT_GWh_w_end, RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
             }
         )
 
@@ -591,19 +598,11 @@ def draw_sankey(df):
     )
     _, col2, _ = st.columns([1, 7, 1])
     with col2:
-        with stylable_container(
-            key="sankey",
-            css_styles="""
-            img {
-                    border-radius: 70px;
-            }
-            """,
-        ):
-            diagram.draw()
-            st.pyplot(plt)
-            img = io.BytesIO()
-            plt.savefig(img, format="png")
-            st.session_state.image = img
+        diagram.draw()
+        st.pyplot(plt)
+        img = io.BytesIO()
+        plt.savefig(img, format="png")
+        st.session_state.image = img
  
  
 def empty_df():
