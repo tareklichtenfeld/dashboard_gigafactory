@@ -586,7 +586,7 @@ def draw_sankey(df):
         flows=flows_clean,
         cmap=plt.get_cmap("Pastel1"),
         flow_color_mode="source",
-        node_opts={"label_opts": {"fontsize": 10}, },
+        node_opts={"label_opts": {"fontsize": 7, "fontname": "monospace"}},  # Set font to monospace
         flow_opts={"curvature": 8/10},
     )
     _, col2, _ = st.columns([1, 7, 1])
@@ -602,6 +602,9 @@ def draw_sankey(df):
             diagram.draw()
             st.pyplot(plt)
             img = io.BytesIO()
+            for flow in diagram.flows:
+                x, y = flow.get_pos()
+                plt.annotate(f"{flow.value} GWh", xy=(x, y), ha='center', va='center', fontsize=8)
             plt.savefig(img, format="png")
             st.session_state.image = img
  
