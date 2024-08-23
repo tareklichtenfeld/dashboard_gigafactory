@@ -22,11 +22,6 @@ with open('style.css') as f:
 
 #sidebar
 st.sidebar.header('Gigafactory `Builder`')
-
-#----INFO_BOX---------------------------------------
-def show_info(text):
-    st.sidebar.help(text)
-
 st.sidebar.subheader('selectable planning parameters')
 location = st.sidebar.selectbox('location', ('Deutschland', 'Norwegen', 'Texas, USA', 'Mexiko', 'Chile', 'Brasilien', 'Katar', 'Greenville' ))
 production_capacity= st.sidebar.slider('production capacity [GWh/a]', 2, 150, 40)
