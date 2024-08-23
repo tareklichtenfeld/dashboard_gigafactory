@@ -11,7 +11,6 @@ from sankeyflow import Sankey
 import matplotlib.pyplot as plt
 import io
 from streamlit_extras.stylable_container import stylable_container
-import folium
 
 # Page setting
 st.set_page_config(page_title="Gigafactory-Skaleriungstool",
