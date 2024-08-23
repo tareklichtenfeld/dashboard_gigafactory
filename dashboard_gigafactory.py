@@ -19,6 +19,8 @@ st.set_page_config(page_title="Gigafactory-Skaleriungstool",
 with open('style.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
+st.header('Gigafactory `Builder`')
+
 #sidebar
 st.sidebar.header('Gigafactory `Builder`')
 st.sidebar.subheader('selectable planning parameters')
