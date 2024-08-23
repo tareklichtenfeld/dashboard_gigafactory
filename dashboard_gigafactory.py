@@ -162,8 +162,6 @@ strom_electr_end = []
 
 # make list with hours--------------------------------------
 station_time_data = list(range(len(t)))
-print(station_time_data)
-print(t)
 
 
 #---------------------------FORMULAS----------------------------------------------------------------------------
