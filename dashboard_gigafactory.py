@@ -10,7 +10,6 @@ from streamlit_modal import Modal
 from sankeyflow import Sankey
 import matplotlib.pyplot as plt
 import io
-from streamlit_extras.stylable_container import stylable_container
 
 # Page setting
 st.set_page_config(page_title="Gigafactory-Skaleriungstool",
@@ -141,8 +140,8 @@ weather_param = 'temp'
 ypoints = []
 for station_name, station_id in stat:
   # Download hourly data for a specific date range (adjust dates as needed)
-  start_date = datetime(2023, 1, 1)  # Change year, month, day as needed
-  end_date = datetime(2023, 12, 31)  # Change year, month, day as needed
+  start_date = datetime(y1, m1, d1)  # Change year, month, day as needed
+  end_date = datetime(y2, m2, d2)  # Change year, month, day as needed
   data = Hourly(f"{station_id}", start_date, end_date)
   data = data.fetch()
 
@@ -158,8 +157,8 @@ weather_param = 'pres'
 ypoints = []
 for station_name, station_id in stat:
   # Download hourly data for a specific date range (adjust dates as needed)
-  start_date = datetime(2023, 1, 1)  # Change year, month, day as needed
-  end_date = datetime(2023, 12, 31)  # Change year, month, day as needed
+  start_date = datetime(y1, m1, d1)  # Change year, month, day as needed
+  end_date = datetime(y2, m2, d2)  # Change year, month, day as needed
   data = Hourly(f"{station_id}", start_date, end_date)
   data = data.fetch()
 
