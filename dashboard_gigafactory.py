@@ -11,6 +11,7 @@ from sankeyflow import Sankey
 import matplotlib.pyplot as plt
 import io
 from streamlit_extras.stylable_container import stylable_container
+import folium
 
 # Page setting
 st.set_page_config(page_title="Gigafactory-Skaleriungstool",
@@ -21,16 +22,20 @@ with open('style.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 #sidebar
-st.sidebar.header('Dashboard `Skalierbare Gigafactory`')
+st.sidebar.header('Gigafactory `Builder`')
 
-st.sidebar.subheader('Wählbare Planungsparameter')
-location = st.sidebar.selectbox('Standort', ('Deutschland', 'Norwegen', 'Texas, USA', 'Mexiko', 'Chile', 'Brasilien', 'Katar', 'Greenville' ))
-production_capacity= st.sidebar.slider('Produktionskapazität in GWh/a', 2, 150, 40)
-cell_format = st.sidebar.selectbox('Zellformat', ('Pouch', 'Rund', 'Prismatisch'))
-automation_degree = st.sidebar.selectbox('Automatisierungsgrad',('Niedrig','Mittel','Hoch'))
-production_setup = st.sidebar.selectbox('Art der Fertigung',('State of the Art','Next Gen'))
-production_days = st.sidebar.slider('Produktionstage im Jahr', 1, 315, 310)
-energy_concept = st.sidebar.selectbox('Energiekonzept', ('Erdgas-Kessel', 'Blockheizkraftwerk', 'Wärmepumpe', 'Kombi-Wärmepumpe')) 
+#----INFO_BOX---------------------------------------
+def show_info(text):
+    st.sidebar.help(text)
+
+st.sidebar.subheader('selectable planning parameters')
+location = st.sidebar.selectbox('location', ('Deutschland', 'Norwegen', 'Texas, USA', 'Mexiko', 'Chile', 'Brasilien', 'Katar', 'Greenville' ))
+production_capacity= st.sidebar.slider('production capacity [GWh/a]', 2, 150, 40)
+cell_format = st.sidebar.selectbox('cell format', ('Pouch', 'Rund', 'Prismatisch'))
+automation_degree = st.sidebar.selectbox('degree of automation',('Niedrig','Mittel','Hoch'))
+production_setup = st.sidebar.selectbox('cell chemistry',('NMC 811','NCA...'))
+production_days = st.sidebar.slider('production days per year', 1, 315, 315)
+energy_concept = st.sidebar.selectbox('energy concept', ('Erdgas-Kessel', 'Blockheizkraftwerk', 'Wärmepumpe', 'Kombi-Wärmepumpe')) 
 
 
 st.sidebar.markdown('''
@@ -49,7 +54,7 @@ modal = Modal(
     max_width=744  # default value
 )
 
-open_modal = st.button("Tutorial")
+open_modal = st.button("First Time?")
 if open_modal:
     modal.open()
 
@@ -218,7 +223,7 @@ def MA_nach_Automatisierungsgrad(x2):
 #-----PROZESSENERGIE--------------------------------------------------------
 #-----Elektrische Last--------------------------------------------
 def Prozess_Stromnutzlast(x):
-    day_factor=365/315
+    day_factor=315/315
     if cell_format == 'Pouch':
         return 25.86493*x*day_factor
     if cell_format == 'Rund':
@@ -228,7 +233,7 @@ def Prozess_Stromnutzlast(x):
     
 #-----Kälte-Nutzlast--------------------------------------------
 def Prozess_Kaeltenutzlast(x):
-    day_factor=365/315
+    day_factor=315/315
     if cell_format == 'Pouch':
         return 8.14149*x*day_factor
     if cell_format == 'Rund':
@@ -410,15 +415,14 @@ cop_kkm = 6.1
 #---------------------BERECHNUNG DER ENDLAST ZUM GESAMTENERGIEBEDARF----------------------------------------------------------------
 #-----REIN_ UND TROCKENRAUM--------------------------------------------------------------------------------------------
 #-----Kälte RuT gesamt ausgeben-------------------------------------------------------------------------
-RuT_kWh_k_nutz = sum(cool_data)*production_day_factor
 RuT_GWh_k_nutz = sum(cool_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
+
 if energy_concept == 'Kombi-Wärmepumpe':
     RuT_GWh_k_end = kombi_wp_k_end(RuT_GWh_k_nutz)
 else:
     RuT_GWh_k_end = sum(strom_wp_k_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
 
 #-----Wärme RuT gesamt ausgeben--------------------------------------------------------------------------
-RuT_kWh_w_nutz = sum(heat_data)*production_day_factor
 RuT_GWh_w_nutz = sum(heat_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
 
 if energy_concept == 'Erdgas-Kessel':
@@ -432,7 +436,6 @@ if energy_concept == 'Kombi-Wärmepumpe':
 
 
 #-----Strom RuT gesamt ausgeben--------------------------------------------------------------------------
-RuT_kWh_s_nutz = sum(strom_electr_end)*production_day_factor
 RuT_GWh_s_nutz = sum(strom_electr_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
 
 if energy_concept == 'Blockheizkraftwerk':
@@ -450,9 +453,10 @@ RuT_GWh_kum_ges = (RuT_GWh_k_end + RuT_GWh_w_end + RuT_GWh_s_end)
 
 #------GEBÄUDETECHNIK------------------------------------------------------------------------------------------------
 #-----Nutzlast-------------------------------------------------------------------------------------------
-RLT_GWh_k_nutz = RLT_Kaeltelast(production_capacity)*production_day_factor
-RLT_GWh_w_nutz = RLT_Waermelast(production_capacity)*production_day_factor
-RLT_GWh_s_nutz = RLT_Stromlast(production_capacity)*production_day_factor
+#-----       (INFO: RLT unabhängig von production days)       -------------------
+RLT_GWh_k_nutz = RLT_Kaeltelast(production_capacity)
+RLT_GWh_w_nutz = RLT_Waermelast(production_capacity)
+RLT_GWh_s_nutz = RLT_Stromlast(production_capacity)
 
 #-----Endwärme---------------------------------------------------------------------
 if energy_concept == 'Kombi-Wärmepumpe':
@@ -503,16 +507,16 @@ else:
 
 #-----------GESAMTFACTORY ENERGIEVERBRÄUCHE---------------------------------------------------------------------------
 #-----Nutzlast Gesamtfabrik---------------------------------------------------
-gesamtfabrik_k_nutz = (RuT_GWh_k_nutz+Prozess_Kaeltenutzlast(production_capacity)+RLT_GWh_k_nutz)
+gesamtfabrik_k_nutz = (RuT_GWh_k_nutz+PRO_GWh_k_nutz+RLT_GWh_k_nutz)
 gesamtfabrik_w_nutz = (RuT_GWh_w_nutz+RLT_GWh_w_nutz)
-gesamtfabrik_s_nutz = (RuT_GWh_s_nutz+Prozess_Stromnutzlast(production_capacity)+RLT_GWh_s_nutz)
+gesamtfabrik_s_nutz = (RuT_GWh_s_nutz+PRO_GWh_s_nutz+RLT_GWh_s_nutz)
 
 gesamtfabrik_ges_nutz = gesamtfabrik_k_nutz + gesamtfabrik_w_nutz + gesamtfabrik_s_nutz
 
 #-----Endlast Gesamtfabrik----------------------------------------------------
-gesamtfabrik_k_end = RuT_GWh_k_end+(strom_eert(eer_avg, Prozess_Kaeltenutzlast(production_capacity)))+(strom_eert(eer_avg, RLT_GWh_k_nutz))
-gesamtfabrik_w_end = RuT_GWh_w_end+(strom_cop(cop_avg, RLT_GWh_k_nutz))
-gesamtfabrik_s_end = (RuT_GWh_s_end+Prozess_Stromnutzlast(production_capacity)+RLT_GWh_s_end)
+gesamtfabrik_k_end = (RuT_GWh_k_end+PRO_GWh_k_end+RLT_GWh_k_end)
+gesamtfabrik_w_end = (RuT_GWh_w_end+RLT_GWh_w_end)
+gesamtfabrik_s_end = (RuT_GWh_s_end+PRO_GWh_s_end+RLT_GWh_s_end)
 
 gesamtfabrik_ges_end = gesamtfabrik_k_end + gesamtfabrik_w_end + gesamtfabrik_s_end
 
@@ -520,6 +524,24 @@ gesamtfabrik_ges_end = gesamtfabrik_k_end + gesamtfabrik_w_end + gesamtfabrik_s_
 energiefaktor = gesamtfabrik_ges_nutz/production_capacity
 
 
+#-----Emissionen--------------------------------------------------------------------------------
+def co2_natual_gas(x):
+    kg_co2_GWh = 0.24 * 10**6
+    return(kg_co2_GWh * x)
+
+def co2_electric(x):
+    kg_co2_GWh=5
+    return(x*kg_co2_GWh)
+
+if energy_concept=="Erdgas-Kessel":
+    natural_gas_usage=gesamtfabrik_w_end
+if energy_concept=="Blockheizkraftwerk":
+    natural_gas_usage=gesamtfabrik_w_end+bhkw_s_wirkungsgrad(RLT_GWh_s_nutz)
+else:
+    natural_gas_usage=0
+
+#-----TOTAl------
+natural_gas_emissions_tons=co2_natual_gas(natural_gas_usage)/10**3
 
 
 #--------------------DATA VISUALIZER-----------------------------------------------------------------------------------
@@ -527,42 +549,40 @@ energiefaktor = gesamtfabrik_ges_nutz/production_capacity
 a1, a2, a3 = st.columns(3)
 a1.image(Image.open('streamlit-logo-secondary-colormark-darktext.png'))
 a2.metric("energy factor", f"{round(energiefaktor,2)} kWh/kWhcell")
-a3.metric("Gesamt-Nutzenergiebedarf der Gigafactory", f"{round(gesamtfabrik_ges_nutz,2)} GWh/a")
+a3.metric("total useful energy consumption", f"{round(gesamtfabrik_ges_nutz,2)} GWh/a")
 
 #-----Row B-----------------------------------------------------------------
 b1, b2, b3, b4 = st.columns(4)
-b1.metric("Nutz-Wärmelast des Gigafactory",f"{round(gesamtfabrik_w_nutz,2)} GWh/a")
-b2.metric("End-Wärmebedarf der Gigafactory",f"{round(gesamtfabrik_w_end,2)} GWh/a")
-b3.metric("Nutz-Kältelast der Gigafactory",f"{round(gesamtfabrik_k_nutz,2)} GWh/a")
-b4.metric("End-Kältelast der Gigafactory",f"{round(gesamtfabrik_k_end,2)} GWh/a")
+b1.metric("useful heat load",f"{round(gesamtfabrik_w_nutz,2)} GWh/a")
+b2.metric("useful cooling load",f"{round(gesamtfabrik_k_nutz,2)} GWh/a")
+b3.metric("electrical energy usage",f"{round(gesamtfabrik_s_nutz,2)} GWh/a")
+b4.metric("total energy consumption",f"{round(gesamtfabrik_ges_end,2)} GWh/a")
+
+
+#-----row b2---------------------------------------------------------------
+b5, b6, b7 = st.columns(3)
+b5.metric("CO2-emissions",f"{round(natural_gas_emissions_tons,1)} tons")
+b6.metric("useful cooling load",f"{round(gesamtfabrik_k_nutz,2)} GWh/a")
+b7.metric("electrical energy usage",f"{round(gesamtfabrik_s_nutz,2)} GWh/a")
+
 
 #-----Row C-----------------------------------------------------------------
 Nutzlastdiagramm = pd.DataFrame({
-    "a": ["Nutz-Kältelast","Nutz-Wärmelast", "Stromlast"],
-    "b": [ gesamtfabrik_k_nutz, gesamtfabrik_w_nutz, gesamtfabrik_s_nutz],
+    "name": ["cooling usage","heat usage", "eletric energy usage"],
+    "useful energy": [ gesamtfabrik_k_nutz, gesamtfabrik_w_nutz, gesamtfabrik_s_nutz],
+    "color": ["#779ecb","#89e894", "#ff6961"]
 })
 
-Endlastdiagramm = pd.DataFrame({
-    "c": ["End-Kältelast","End-Wärmelast", "Stromlast"],
-    "d": [ gesamtfabrik_k_end, gesamtfabrik_w_end, gesamtfabrik_s_end],
-})
+
 
 c1, c2= st.columns(2)
 with c1:
-    st.markdown("**Anteile der Nutzlast**")
-    plost.donut_chart(
+    st.markdown("**shares of energy usage**")
+    st.bar_chart(
         data=Nutzlastdiagramm,
-        theta="b",
-        color="a",
-        height=350
-    )
-with c2:
-    st.markdown("**Anteile der Endlast**")
-    plost.donut_chart(
-        data=Endlastdiagramm,
-        theta="d",
-        color="c",
-        height=350
+        x="name",
+        y="useful energy",
+        color="color"
     )
 
 #---------Row D - SANKEY DIAGRAM-----------------------------------------------------
@@ -583,6 +603,24 @@ with c2:
                 "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end), RLT_GWh_w_end, RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end), RuT_GWh_w_end, RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
             }
         )
+    if energy_concept == "Wärmepumpe":
+        df = pd.DataFrame(
+            {
+                "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Building", "Building", "Building","Electricity", "Dry Room","Dry Room", "Dry Room"],
+                "target": ["Manufacturing", "Electric Energy usage", "Cooling usage", "Building", "Cooling usage", "Electric Energy usage", "Heat usage", "Dry Room", "Cooling usage", "Electric Energy usage", "Heat usage"],
+                "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end+RLT_GWh_w_end), RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end+RuT_GWh_w_end), RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
+            }
+        )
+        
+    if energy_concept == "Kombi-Wärmepumpe":
+        df = pd.DataFrame(
+            {
+                "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Building", "Building", "Building","Electricity", "Dry Room","Dry Room", "Dry Room"],
+                "target": ["Manufacturing", "Electric Energy usage", "Cooling usage", "Building", "Cooling usage", "Electric Energy usage", "Heat usage", "Dry Room", "Cooling usage", "Electric Energy usage", "Heat usage"],
+                "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end+RLT_GWh_w_end), RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end+RuT_GWh_w_end), RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
+            }
+        )
+
 
 def draw_sankey(df):
     flows = list(df[["source", "target", "value"]].itertuples(index=False, name=None))
@@ -614,6 +652,7 @@ def timestamp():
     return pd.Timestamp.now().strftime("%Y%m%d%H%M%S")
  
 sankey_placeholder = st.empty()
- 
+#-----draw sankey plot ---------------------------------------------------
+st.markdown("**Sankey-plot**")
 draw_sankey(df)
 #--------------------------by tarek lichtenfeld, august 2024------------------------------------

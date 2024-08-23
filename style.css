@@ -21,6 +21,15 @@ div.css-wnm74r.e16fv1kl3 {
   margin-right: 20%;
 }
 
+div.st-emotion-cache-0.e1f1d6gn0 {
+  color:rgb(151, 83, 0);
+  padding: 3% 3% 3% 3%;;
+  border-width: 5px;
+  border-radius: 5px;
+  border-color: purple;
+}
+
+
 /* popup window */ 
 div.st-emotion-cache-jpcrdf.e1f1d6gn2 {
   background-color: #fdff8c;
@@ -48,9 +57,13 @@ div.st-emotion-cache-12w0qpk.e1f1d6gn3 {
   border-color: purple;
 }
 
+
+div.st-emotion-cache-1l8gdore1nzilvr4 {
+  size: 50px;
+}
+
 /*Sankey Plot*/
-div.st-emotion-cache-1v0mbdj.e115fcil1 {
-  border-width: 20px;
+div.st-emotion-cache-1kyxreq.e115fcil2 {
   border-radius: 15px;
   border: purple;
 }
