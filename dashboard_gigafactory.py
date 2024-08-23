@@ -23,13 +23,15 @@ with open('style.css') as f:
 #sidebar
 st.sidebar.header('Gigafactory `Builder`')
 st.sidebar.subheader('selectable planning parameters')
-location = st.sidebar.selectbox('location', ('Deutschland', 'Norwegen', 'Texas, USA', 'Mexiko', 'Chile', 'Brasilien', 'Katar', 'Greenville' ))
+location = st.sidebar.selectbox('location', ('Germany', 'Norway', 'Texas, USA', 'Mexico', 'Chile', 'Brasil', 'Qatar', 'Greenville, South Carolina' ))
 production_capacity= st.sidebar.slider('production capacity [GWh/a]', 2, 150, 40)
 cell_format = st.sidebar.selectbox('cell format', ('Pouch', 'Rund', 'Prismatisch'))
 automation_degree = st.sidebar.selectbox('degree of automation',('Niedrig','Mittel','Hoch'))
 production_setup = st.sidebar.selectbox('cell chemistry',('NMC 811','NCA...'))
 production_days = st.sidebar.slider('production days per year', 1, 315, 315)
 energy_concept = st.sidebar.selectbox('energy concept', ('Erdgas-Kessel', 'Blockheizkraftwerk', 'Wärmepumpe', 'Kombi-Wärmepumpe')) 
+st.sidebar.subheader('Developer Options')
+year = st.sidebar.slider('year of production', 2003, 2023, 2023)
 
 
 st.sidebar.markdown('''
@@ -71,20 +73,44 @@ if modal.is_open():
 
 def get_coordinates(location):
     coordinates_dict = {
-        'Deutschland': (51.962099672722246, 7.6260690597081355),
-        'Norwegen': (69.65083068941327, 18.95616203587009),
+        'Germany': (51.962099672722246, 7.6260690597081355),
+        'Norway': (69.65083068941327, 18.95616203587009),
         'Texas, USA': (35.19429133374373, -101.85247871892864),
-        'Mexiko': (25.690794191837405, -100.31597776954884),
+        'Mexico': (25.690794191837405, -100.31597776954884),
         'Chile': (-22.46061693078931, -68.92687992157762),
-        'Brasilien': (2.8168900489923048, -60.68063433499766),
-        'Katar': (25.253853158779187, 51.34762132032399),
-        'Russland': (53.7057509164329, 91.39067030182092),
-        'Greenville': (34.849191725553155, -82.39028917600623)
+        'Brasil': (2.8168900489923048, -60.68063433499766),
+        'Qatar': (25.253853158779187, 51.34762132032399),
+        'Russia': (53.7057509164329, 91.39067030182092),
+        'Greenville, South Carolina': (34.849191725553155, -82.39028917600623)
     }
     return coordinates_dict.get(location, None)
 
+
 #-----get coordinates from chosen location-------------------
 latitude, longitude = get_coordinates(location)
+
+#----Choose date from sidebar----------------------------------------
+
+#----start_date----------------------
+def get_start_dates(date):
+    dates_dict = {}
+    for year in range(date, 1989, -1):  # Rückwärts iterieren von 'date' bis 1990
+        dates_dict[str(year)] = (year, 1, 1)
+    return dates_dict.get(str(date), (2023,1,1))
+
+#-----end date------------------------
+def get_end_dates(date):
+    dates_dict = {}
+    for year in range(date, 1989, -1):  # Rückwärts iterieren von 'date' bis 1990
+        dates_dict[str(year)] = (year, 12, 31)
+    return dates_dict.get(str(date), (2023,12,31))
+
+#-----get dates from chosen year---------------------------------
+y1, m1, d1 = get_start_dates(year)
+y2, m2, d2 = get_end_dates(year)
+
+
+
 
 #-----GET WEATHER DATA---------------------------------------
 stations = Stations()
@@ -101,8 +127,8 @@ weather_param = 'rhum'
 ypoints = []
 for station_name, station_id in stat:
   # Download hourly data for a specific date range (adjust dates as needed)
-  start_date = datetime(2023, 1, 1)  # Change year, month, day as needed
-  end_date = datetime(2023, 12, 31)  # Change year, month, day as needed
+  start_date = datetime(y1, m1, d1)  # Change year, month, day as needed
+  end_date = datetime(y2, m2, d2)  # Change year, month, day as needed
   data = Hourly(f"{station_id}", start_date, end_date)
   data = data.fetch()
 
@@ -541,14 +567,14 @@ natural_gas_emissions_tons=co2_natual_gas(natural_gas_usage)/10**3
 a1, a2, a3 = st.columns(3)
 a1.image(Image.open('streamlit-logo-secondary-colormark-darktext.png'))
 a2.metric("energy factor", f"{round(energiefaktor,2)} kWh/kWhcell")
-a3.metric("total useful energy consumption", f"{round(gesamtfabrik_ges_nutz,2)} GWh/a")
+a3.metric("Total energy output", f"{round(gesamtfabrik_ges_nutz,2)} GWh/a")
 
 #-----Row B-----------------------------------------------------------------
 b1, b2, b3, b4 = st.columns(4)
-b1.metric("useful heat load",f"{round(gesamtfabrik_w_nutz,2)} GWh/a")
-b2.metric("useful cooling load",f"{round(gesamtfabrik_k_nutz,2)} GWh/a")
-b3.metric("electrical energy usage",f"{round(gesamtfabrik_s_nutz,2)} GWh/a")
-b4.metric("total energy consumption",f"{round(gesamtfabrik_ges_end,2)} GWh/a")
+b1.metric("Heat energy output",f"{round(gesamtfabrik_w_nutz,2)} GWh/a")
+b2.metric("cooling energy output",f"{round(gesamtfabrik_k_nutz,2)} GWh/a")
+b3.metric("electrical energy output",f"{round(gesamtfabrik_s_nutz,2)} GWh/a")
+b4.metric("Total energy input",f"{round(gesamtfabrik_ges_end,2)} GWh/a")
 
 
 #-----row b2---------------------------------------------------------------
