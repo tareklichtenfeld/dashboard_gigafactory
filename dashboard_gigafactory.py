@@ -43,7 +43,7 @@ Created by Tarek Lichtenfeld :)
 
 #-----popup when opening
 modal = Modal(
-    "Tutorial", 
+    "Introduction", 
     key="demo-modal",
     
     # Optional
@@ -552,10 +552,10 @@ def co2_electric(x):
     kg_co2_GWh=5
     return(x*kg_co2_GWh)
 
-if energy_concept=="Erdgas-Kessel":
-    natural_gas_usage=gesamtfabrik_w_end
 if energy_concept=="Blockheizkraftwerk":
     natural_gas_usage=gesamtfabrik_w_end+bhkw_s_wirkungsgrad(RLT_GWh_s_nutz)
+elif energy_concept=="Erdgas-Kessel":
+    natural_gas_usage=gesamtfabrik_w_end
 else:
     natural_gas_usage=0
 
@@ -580,15 +580,15 @@ b4.metric("Total energy input",f"{round(gesamtfabrik_ges_end,2)} GWh/a")
 
 #-----row b2---------------------------------------------------------------
 b5, b6, b7 = st.columns(3)
-b5.metric("CO2-emissions",f"{round(natural_gas_emissions_tons,1)} tons")
+b5.metric("CO2-emissions",f"{round((natural_gas_emissions_tons),1)} tons")
 b6.metric("useful cooling load",f"{round(gesamtfabrik_k_nutz,2)} GWh/a")
 b7.metric("electrical energy usage",f"{round(gesamtfabrik_s_nutz,2)} GWh/a")
 
 
 #-----Row C-----------------------------------------------------------------
 Nutzlastdiagramm = pd.DataFrame({
-    "name": ["cooling usage","heat usage", "eletric energy usage"],
-    "useful energy": [ gesamtfabrik_k_nutz, gesamtfabrik_w_nutz, gesamtfabrik_s_nutz],
+    "name": ["cooling output","heat output", "eletric energy output"],
+    "energy output": [ gesamtfabrik_k_nutz, gesamtfabrik_w_nutz, gesamtfabrik_s_nutz],
     "color": ["#779ecb","#89e894", "#ff6961"]
 })
 
@@ -596,11 +596,11 @@ Nutzlastdiagramm = pd.DataFrame({
 
 c1, c2= st.columns(2)
 with c1:
-    st.markdown("**shares of energy usage**")
+    st.markdown("**shares of energy output**")
     st.bar_chart(
         data=Nutzlastdiagramm,
         x="name",
-        y="useful energy",
+        y="energy output",
         color="color"
     )
 
