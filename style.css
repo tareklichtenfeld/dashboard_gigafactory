@@ -15,6 +15,12 @@ div.css-1ht1j8u.e16fv1kl0 {
   text-align: center;
 }
 
+
+/*button explanation*/
+div.st-emotion-cache-1m3plho.ef3psqc13{
+  background-color: #fdff8c;
+}
+
 /* Third line of Row */
 div.css-wnm74r.e16fv1kl3 {
   margin-left: 30%;
@@ -54,8 +60,9 @@ div.st-emotion-cache-1l8gdore1nzilvr4 {
 
 /*Sankey Plot*/
 div.st-emotion-cache-1kyxreq.e115fcil2 {
+  padding: 3% 3% 3% 3%;
   border-radius: 15px;
-  border: purple;
+  border-color: purple;
 }
 
 /* Hide hamburger menu and footer */

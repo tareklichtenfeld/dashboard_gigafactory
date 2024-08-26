@@ -21,9 +21,31 @@ with open('style.css') as f:
 
 st.header('Gigafactory `Builder`')
 
-#sidebar
+#-----SIDEBAAARRR----------------------------------------------------------
 st.sidebar.header('Gigafactory `Builder`')
 st.sidebar.subheader('selectable planning parameters')
+
+#-----INFO BUTTON-----------------------------------
+if st.sidebar.button('what do the buttons mean?'):
+    st.sidebar.markdown(f"""
+        <div style="text-align: left;">
+            <p><strong>Explanation of the parameters</strong></p>
+            <ul style="list-style: none;">
+                <p><li><strong>Location:</strong> Sets the location of your gigafactory. The climate of the location can drastically change the energy demand of the factory.</li></p>
+                <p><li><strong>Production Capacity:</strong> Determines how much battery capacity will be produced in your factory per year. </li></p>
+                <p><li><strong>Cell Format:</strong> Different cell formats have different manufacturing steps and requirements. Choose between the three most common formats.  </li></p>
+                <p><li><strong>Automation Degree:</strong> Depending on the degree of automation, more or less people are working in the dry rooms, which also has an impact on energy demand. </li></p>
+                <p><li><strong>Cell Chemistry</strong> Every cell chemistry has different requirements for the dry room and manufacturing steps. </li></p>
+                <p><li><strong>Production Days per Year:</strong> How many days is your factory running on full manufacturing capacity? If you set this to less than 315 days, the production capacity has to be seen as theoretical, as there of course will be less battery cells produced if you have fewer production days.</li></p>
+                <p><li><strong>Energy Concept:</strong> The energy concept defines where the energy is coming from. Depending on your choice, the heat output is generated with electricity through a heat pump, or with natural gas. </li></p>
+                <p><li><strong>Year of Production:</strong> Experimental feature that changes the reference year the Gigafactory Builder uses to calculate the energy demand of the process steps depending on outside temperature.</li></p>
+            </ul>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.sidebar.button('unterstood, thanks :D'):
+        st.sidebar.markdown()
+        
+        
 location = st.sidebar.selectbox('location', ('Germany', 'Norway', 'Texas, USA', 'Mexico', 'Chile', 'Brasil', 'Qatar', 'Greenville, South Carolina' ))
 production_capacity= st.sidebar.slider('production capacity [GWh/a]', 2, 150, 40)
 cell_format = st.sidebar.selectbox('cell format', ('Pouch', 'Rund', 'Prismatisch'))
@@ -567,7 +589,7 @@ natural_gas_emissions_tons=co2_natual_gas(natural_gas_usage)/10**3
 #-----Row A-----------------------------------------------------------------
 a1, a2, a3 = st.columns(3)
 a1.image(Image.open('streamlit-logo-secondary-colormark-darktext.png'))
-a2.metric("energy factor", f"{round(energiefaktor,2)} kWh/kWhcell")
+a2.metric("energy factor", f"{round(energiefaktor,2)} kWh/kWhcell ")
 a3.metric("Total energy output", f"{round(gesamtfabrik_ges_nutz,2)} GWh/a")
 
 #-----Row B-----------------------------------------------------------------
@@ -580,9 +602,9 @@ b4.metric("Total energy input",f"{round(gesamtfabrik_ges_end,2)} GWh/a")
 
 #-----row b2---------------------------------------------------------------
 b5, b6, b7 = st.columns(3)
-b5.metric("CO2-emissions",f"{round((natural_gas_emissions_tons),1)} tons")
-b6.metric("useful cooling load",f"{round(gesamtfabrik_k_nutz,2)} GWh/a")
-b7.metric("electrical energy usage",f"{round(gesamtfabrik_s_nutz,2)} GWh/a")
+b5.metric("CO2-emissions",f"{round((natural_gas_emissions_tons),1)} tons/year")
+b6.metric("average connection power",f"{round((((gesamtfabrik_ges_end-natural_gas_usage)/8760)*10**3),2)} MW")
+b7.metric("Total electricity input",f"{round((gesamtfabrik_ges_end-natural_gas_usage),2)} GWh/a")
 
 
 #-----Row C-----------------------------------------------------------------
@@ -603,6 +625,7 @@ with c1:
         y="energy output",
         color="color"
     )
+
 
 #---------Row D - SANKEY DIAGRAM-----------------------------------------------------
 #-----define sankey states-------------------------------------------------------
@@ -645,6 +668,7 @@ def draw_sankey(df):
     flows = list(df[["source", "target", "value"]].itertuples(index=False, name=None))
     # remove empty and nan values
     flows_clean = [x for x in flows if x[0] and x[1] and x[2] > 0]
+
 
     diagram = Sankey(
         flows=flows_clean,
