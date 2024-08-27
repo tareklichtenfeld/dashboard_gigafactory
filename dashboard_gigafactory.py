@@ -668,8 +668,7 @@ def draw_sankey(df):
     flows = list(df[["source", "target", "value"]].itertuples(index=False, name=None))
     # remove empty and nan values
     flows_clean = [x for x in flows if x[0] and x[1] and x[2] > 0]
-
-
+    
     diagram = Sankey(
         flows=flows_clean,
         cmap=plt.get_cmap("Pastel1"),
