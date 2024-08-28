@@ -11,6 +11,7 @@ from sankeyflow import Sankey
 import matplotlib.pyplot as plt
 import io
 import pydeck as pdk
+from geopy.geocoders import Nominatim
 
 # Page setting
 st.set_page_config(page_title="Gigafactory-Skaleriungstool",
@@ -25,8 +26,51 @@ st.header('Gigafactory `Builder`')
 
 #-----test map 2-----------------------------------------------------------
 # Center coordinates (adjust as needed)
-center_lng = 101.967
-center_lat = 35.431
+
+
+#-----SIDEBAAARRR----------------------------------------------------------
+st.sidebar.header('Gigafactory `Builder`')
+st.sidebar.subheader('selectable planning parameters')
+
+#-----INFO BUTTON-----------------------------------
+if st.sidebar.button('what do the buttons mean?'):
+    st.sidebar.markdown(f"""
+        <div style="text-align: left;">
+            <p><strong>Explanation of the parameters</strong></p>
+            <ul style="list-style: none;">
+                <p><li><strong>Location:</strong> Sets the location of your gigafactory. The climate of the location can drastically change the energy demand of the factory.</li></p>
+                <p><li><strong>Production Capacity:</strong> Determines how much battery capacity will be produced in your factory per year. </li></p>
+                <p><li><strong>Cell Format:</strong> Different cell formats have different manufacturing steps and requirements. Choose between the three most common formats.  </li></p>
+                <p><li><strong>Automation Degree:</strong> Depending on the degree of automation, more or less people are working in the dry rooms, which also has an impact on energy demand. </li></p>
+                <p><li><strong>Cell Chemistry</strong> Every cell chemistry has different requirements for the dry room and manufacturing steps. </li></p>
+                <p><li><strong>Production Days per Year:</strong> How many days is your factory running on full manufacturing capacity? If you set this to less than 315 days, the production capacity has to be seen as theoretical, as there of course will be less battery cells produced if you have fewer production days.</li></p>
+                <p><li><strong>Energy Concept:</strong> The energy concept defines where the energy is coming from. Depending on your choice, the heat output is generated with electricity through a heat pump, or with natural gas. </li></p>
+                <p><li><strong>Year of Production:</strong> Experimental feature that changes the reference year the Gigafactory Builder uses to calculate the energy demand of the process steps depending on outside temperature.</li></p>
+            </ul>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.sidebar.button('unterstood, thanks :D'):
+        st.sidebar.markdown()
+        
+
+
+
+#location = st.sidebar.selectbox('location', ('Germany', 'Norway', 'Texas, USA', 'Mexico', 'Chile', 'Brasil', 'Qatar', 'Greenville, South Carolina' ))
+location_geopy= st.sidebar.text_input("location","Münster")
+
+from geopy.geocoders import Nominatim
+geolocator = Nominatim(user_agent="user_agent")
+location = geolocator.geocode(f"{location_geopy}")
+st.sidebar.write(location.address)
+
+lat = location.latitude
+lon = location.longitude
+
+
+#-----Display the map----------------------------------------------------------------------
+
+center_lng = lon
+center_lat = lat
 
 # Define view_state
 view_state = pdk.ViewState(
@@ -63,36 +107,10 @@ map = pdk.Deck(
     map_style=f"mapbox://styles/mapbox/{'streets-v11'}"
 )
 
-# Display the map
-st.pydeck_chart(map)
+st.sidebar.pydeck_chart(map)
+#----------------------------------------------------------------------------------------------------------
 
 
-#-----SIDEBAAARRR----------------------------------------------------------
-st.sidebar.header('Gigafactory `Builder`')
-st.sidebar.subheader('selectable planning parameters')
-
-#-----INFO BUTTON-----------------------------------
-if st.sidebar.button('what do the buttons mean?'):
-    st.sidebar.markdown(f"""
-        <div style="text-align: left;">
-            <p><strong>Explanation of the parameters</strong></p>
-            <ul style="list-style: none;">
-                <p><li><strong>Location:</strong> Sets the location of your gigafactory. The climate of the location can drastically change the energy demand of the factory.</li></p>
-                <p><li><strong>Production Capacity:</strong> Determines how much battery capacity will be produced in your factory per year. </li></p>
-                <p><li><strong>Cell Format:</strong> Different cell formats have different manufacturing steps and requirements. Choose between the three most common formats.  </li></p>
-                <p><li><strong>Automation Degree:</strong> Depending on the degree of automation, more or less people are working in the dry rooms, which also has an impact on energy demand. </li></p>
-                <p><li><strong>Cell Chemistry</strong> Every cell chemistry has different requirements for the dry room and manufacturing steps. </li></p>
-                <p><li><strong>Production Days per Year:</strong> How many days is your factory running on full manufacturing capacity? If you set this to less than 315 days, the production capacity has to be seen as theoretical, as there of course will be less battery cells produced if you have fewer production days.</li></p>
-                <p><li><strong>Energy Concept:</strong> The energy concept defines where the energy is coming from. Depending on your choice, the heat output is generated with electricity through a heat pump, or with natural gas. </li></p>
-                <p><li><strong>Year of Production:</strong> Experimental feature that changes the reference year the Gigafactory Builder uses to calculate the energy demand of the process steps depending on outside temperature.</li></p>
-            </ul>
-        </div>
-    """, unsafe_allow_html=True)
-    if st.sidebar.button('unterstood, thanks :D'):
-        st.sidebar.markdown()
-        
-        
-location = st.sidebar.selectbox('location', ('Germany', 'Norway', 'Texas, USA', 'Mexico', 'Chile', 'Brasil', 'Qatar', 'Greenville, South Carolina' ))
 production_capacity= st.sidebar.slider('production capacity [GWh/a]', 2, 150, 40)
 cell_format = st.sidebar.selectbox('cell format', ('Pouch', 'Rund', 'Prismatisch'))
 automation_degree = st.sidebar.selectbox('degree of automation',('Niedrig','Mittel','Hoch'))
@@ -156,8 +174,7 @@ def get_coordinates(location):
 
 
 #-----get coordinates from chosen location-------------------
-latitude, longitude = get_coordinates(location)
-
+# latitude, longitude = get_coordinates(location)
 #----Choose date from sidebar----------------------------------------
 
 #----start_date----------------------
@@ -183,7 +200,7 @@ y2, m2, d2 = get_end_dates(year)
 
 #-----GET WEATHER DATA---------------------------------------
 stations = Stations()
-stations = stations.nearby(latitude, longitude)
+stations = stations.nearby(lat, lon)
 station = stations.fetch(1)
 station['id']=station.index
 stat=[]

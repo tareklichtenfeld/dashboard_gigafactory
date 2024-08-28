@@ -1,3 +1,4 @@
+geopy==2.4.1
 matplotlib==3.9.2
 meteostat==1.6.8
 numpy==2.1.0
