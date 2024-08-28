@@ -10,6 +10,7 @@ from streamlit_modal import Modal
 from sankeyflow import Sankey
 import matplotlib.pyplot as plt
 import io
+import pydeck as pdk
 
 # Page setting
 st.set_page_config(page_title="Gigafactory-Skaleriungstool",
@@ -20,6 +21,51 @@ with open('style.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 st.header('Gigafactory `Builder`')
+
+
+#-----test map 2-----------------------------------------------------------
+# Center coordinates (adjust as needed)
+center_lng = 101.967
+center_lat = 35.431
+
+# Define view_state
+view_state = pdk.ViewState(
+    latitude=center_lat, longitude=center_lng, zoom=10
+)
+
+# Function to update coordinates on drag end (similar to previous example)
+def update_coordinates_on_click(event):
+    if event['type'] == 'click':
+        lng, lat = event['lngLat']
+        coordinates.text(f"Longitude: {lng:.4f}\nLatitude: {lat:.4f}")
+
+        # Add a new layer to visualize the click location
+        click_marker_layer = pdk.Layer(
+            type="Marker",
+            data=[{"coordinates": [lng, lat]}],
+            get_position='[lng, lat]',
+            get_color=[0, 255, 0, 255]  # Green color
+        )
+        map.add_layer(click_marker_layer)
+        
+# Create layers with a draggable marker
+layer = pdk.Layer(
+    type="Marker",
+    data=[{"coordinates": [center_lng, center_lat], "draggable": True, "visible": True}],
+    get_position='[lng, lat]',
+    on_click=update_coordinates_on_click
+)
+
+# Create the map
+map = pdk.Deck(
+    initial_view_state=view_state,
+    layers=[layer],
+    map_style=f"mapbox://styles/mapbox/{'streets-v11'}"
+)
+
+# Display the map
+st.pydeck_chart(map)
+
 
 #-----SIDEBAAARRR----------------------------------------------------------
 st.sidebar.header('Gigafactory `Builder`')
@@ -633,7 +679,7 @@ with c1:
         df = pd.DataFrame(
             {
                 "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Natural Gas", "Building", "Building", "Building","Electricity", "Natural Gas", "Dry Room","Dry Room", "Dry Room"],
-                "target": ["Manufacturing", "Electric Energy usage", "Cooling usage", "Building", "Building", "Cooling usage", "Electric Energy usage", "Heat usage", "Dry Room", "Dry Room", "Cooling usage", "Electric Energy usage", "Heat usage"],
+                "target": ["Manufacturing", "Electric Energy Output", "Cooling Energy Output", "Building", "Building", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Dry Room", "Dry Room", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output"],
                 "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end), RLT_GWh_w_end, RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end), RuT_GWh_w_end, RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
             }
         )
@@ -641,7 +687,7 @@ with c1:
         df = pd.DataFrame(
             {
                 "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Natural Gas", "Building", "Building", "Building","Electricity", "Natural Gas", "Dry Room","Dry Room", "Dry Room"],
-                "target": ["Manufacturing", "Electric Energy usage", "Cooling usage", "Building", "Building", "Cooling usage", "Electric Energy usage", "Heat usage", "Dry Room", "Dry Room", "Cooling usage", "Electric Energy usage", "Heat usage"],
+                "target": ["Manufacturing", "Electric Energy Output", "Cooling Energy Output", "Building", "Building", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Dry Room", "Dry Room", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output"],
                 "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end), RLT_GWh_w_end, RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end), RuT_GWh_w_end, RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
             }
         )
@@ -649,7 +695,7 @@ with c1:
         df = pd.DataFrame(
             {
                 "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Building", "Building", "Building","Electricity", "Dry Room","Dry Room", "Dry Room"],
-                "target": ["Manufacturing", "Electric Energy usage", "Cooling usage", "Building", "Cooling usage", "Electric Energy usage", "Heat usage", "Dry Room", "Cooling usage", "Electric Energy usage", "Heat usage"],
+                "target": ["Manufacturing", "Electric Energy Output", "Cooling Energy Output", "Building", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Dry Room", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output"],
                 "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end+RLT_GWh_w_end), RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end+RuT_GWh_w_end), RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
             }
         )
@@ -658,7 +704,7 @@ with c1:
         df = pd.DataFrame(
             {
                 "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Building", "Building", "Building","Electricity", "Dry Room","Dry Room", "Dry Room"],
-                "target": ["Manufacturing", "Electric Energy usage", "Cooling usage", "Building", "Cooling usage", "Electric Energy usage", "Heat usage", "Dry Room", "Cooling usage", "Electric Energy usage", "Heat usage"],
+                "target": ["Manufacturing", "Electric Energy Output", "Cooling Energy Output", "Building", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Dry Room", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output"],
                 "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end+RLT_GWh_w_end), RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end+RuT_GWh_w_end), RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
             }
         )
