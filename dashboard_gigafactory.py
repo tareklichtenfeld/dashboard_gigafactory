@@ -21,9 +21,6 @@ st.set_page_config(page_title="Gigafactory-Skaleriungstool",
 with open('style.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
-st.header('Gigafactory `Builder`')
-
-
 #-----test map 2-----------------------------------------------------------
 # Center coordinates (adjust as needed)
 
@@ -53,9 +50,10 @@ if st.sidebar.button('what do the buttons mean?'):
         st.sidebar.markdown()
         
 
-
-
 #location = st.sidebar.selectbox('location', ('Germany', 'Norway', 'Texas, USA', 'Mexico', 'Chile', 'Brasil', 'Qatar', 'Greenville, South Carolina' ))
+
+
+#-----GET GEOPY LOCATION COORDINATES-----------------------------------------------------------
 location_geopy= st.sidebar.text_input("location","Münster")
 
 from geopy.geocoders import Nominatim
@@ -76,38 +74,31 @@ center_lat = lat
 view_state = pdk.ViewState(
     latitude=center_lat, longitude=center_lng, zoom=10
 )
+# Define the icon mapping
 
-# Function to update coordinates on drag end (similar to previous example)
-def update_coordinates_on_click(event):
-    if event['type'] == 'click':
-        lng, lat = event['lngLat']
-        coordinates.text(f"Longitude: {lng:.4f}\nLatitude: {lat:.4f}")
+IMG_URL = "https://upload.wikimedia.org/wikipedia/commons/3/3b/Battery.svg"
 
-        # Add a new layer to visualize the click location
-        click_marker_layer = pdk.Layer(
-            type="Marker",
-            data=[{"coordinates": [lng, lat]}],
-            get_position='[lng, lat]',
-            get_color=[0, 255, 0, 255]  # Green color
-        )
-        map.add_layer(click_marker_layer)
-        
-# Create layers with a draggable marker
-layer = pdk.Layer(
-    type="Marker",
-    data=[{"coordinates": [center_lng, center_lat], "draggable": True, "visible": True}],
-    get_position='[lng, lat]',
-    on_click=update_coordinates_on_click
+#-----make coordinates df------------------------------------------
+d = [lon,lat]
+coordinates_df = pd.DataFrame(np.array([d]), columns=["longitude", "latitude"])
+
+# Create the layer with the custom symbol
+icon = pdk.Layer(
+    type="BitmapLayer",
+    data=coordinates_df,
+    get_position=["longitude", "latitude"],
+    image=IMG_URL
 )
 
 # Create the map
 map = pdk.Deck(
     initial_view_state=view_state,
-    layers=[layer],
+    layers=[icon],
     map_style=f"mapbox://styles/mapbox/{'streets-v11'}"
 )
 
 st.sidebar.pydeck_chart(map)
+
 #----------------------------------------------------------------------------------------------------------
 
 
@@ -126,6 +117,8 @@ st.sidebar.markdown('''
 Created by Tarek Lichtenfeld :)
 ''')
 
+#-----HEADER------------------------------------------------------------------
+st.header('Gigafactory `Builder`')
 
 #-----popup when opening
 modal = Modal(
@@ -404,6 +397,16 @@ def heat_full_dp60_2rotor(x,y):
 def electr_full_dp60_2rotor():
     return(73)
 
+def cool_full_dp40_2rotor(x, y): 
+    return ( 6.961 - 0.111 * x + 0.0695 * y + 0.002363 * x**2 - 0.007255 * x * y - 0.01146 * y**2 + 7.129e-05 * x**3 - 0.0001515 * x**2 * y + 0.002808 * x * y**2 - 0.003271 * y**3 - 2.057e-06 * x**4 + 9.04e-06 * x**3 * y - 6.803e-05 * x**2 * y**2 + 3.704e-05 * x * y**3 + 0.0001348 * y**4 )
+
+def heat_full_dp40_2rotor(x, y): 
+    return ( 42.23 + 0.00639*x + 0.2352*y + 0.002451*x**2 - 0.009739*x*y + 0.04956*y**2 + 7.133e-05*x**3 - 0.000167*x**2*y + 0.003407*x*y**2 - 0.01413*y**3 - 2.049e-06*x**4 + 8.536e-06*x**3*y - 6.456e-05*x**2*y**2 - 7.002e-06*x*y**3 + 0.0007891*y**4 )
+
+def electr_full_dp40_2rotor(): 
+    return(5.258)
+
+
 
 
 #------------------------ENERGIEKONZEPTE--------------------------------------------------------
@@ -489,11 +492,11 @@ for i in range(len(t)):
     cop_data.append(cop_val)
     
     #Kälteleistung berechnen
-    cool_val = cool_full_dp60_2rotor(temp_val, hum_abs_val)
+    cool_val = cool_full_dp40_2rotor(temp_val, hum_abs_val)
     cool_data.append(cool_val)
     
     #Wärmeleistung berechnen
-    heat_val = heat_full_dp60_2rotor(temp_val, hum_abs_val)
+    heat_val = heat_full_dp40_2rotor(temp_val, hum_abs_val)
     heat_data.append(heat_val)
     
     #End-Kühlleistung berechnen
@@ -507,7 +510,7 @@ for i in range(len(t)):
     brennstoff_w_end.append(brennwertkessel_wirkungsgrad(heat_val))
     
     #Strom
-    strom_electr_end.append(electr_full_dp60_2rotor())
+    strom_electr_end.append(electr_full_dp40_2rotor())
 
 
 
@@ -633,9 +636,11 @@ def co2_natual_gas(x):
     kg_co2_GWh = 0.24 * 10**6
     return(kg_co2_GWh * x)
 
+#-----Strom-Emissionen nach dt. Strommix.-------------------------
 def co2_electric(x):
-    kg_co2_GWh=5
+    kg_co2_GWh= 0.38 * 10**6
     return(x*kg_co2_GWh)
+
 
 if energy_concept=="Blockheizkraftwerk":
     natural_gas_usage=gesamtfabrik_w_end+bhkw_s_wirkungsgrad(RLT_GWh_s_nutz)
@@ -644,8 +649,19 @@ elif energy_concept=="Erdgas-Kessel":
 else:
     natural_gas_usage=0
 
+
+
+if energy_concept=="Blockheizkraftwerk":
+    electricity_usage=gesamtfabrik_ges_end-(gesamtfabrik_w_end+bhkw_s_wirkungsgrad(RLT_GWh_s_nutz))
+elif energy_concept=="Erdgas-Kessel":
+    electricity_usage=gesamtfabrik_ges_end-gesamtfabrik_w_end
+else:
+    electricity_usage=gesamtfabrik_ges_end
+
+
+
 #-----TOTAl------
-natural_gas_emissions_tons=co2_natual_gas(natural_gas_usage)/10**3
+natural_gas_emissions_tons=(co2_electric(electricity_usage)+co2_natual_gas(natural_gas_usage))/10**3 
 
 
 #--------------------DATA VISUALIZER-----------------------------------------------------------------------------------
@@ -665,7 +681,7 @@ b4.metric("Total energy input",f"{round(gesamtfabrik_ges_end,2)} GWh/a")
 
 #-----row b2---------------------------------------------------------------
 b5, b6, b7 = st.columns(3)
-b5.metric("CO2-emissions",f"{round((natural_gas_emissions_tons),1)} tons/year")
+b5.metric("CO2-emissions (assuming the german electricity mix [2024])",f"{round((natural_gas_emissions_tons),1)} tons/year")
 b6.metric("average connection power",f"{round((((gesamtfabrik_ges_end-natural_gas_usage)/8760)*10**3),2)} MW")
 b7.metric("Total electricity input",f"{round((gesamtfabrik_ges_end-natural_gas_usage),2)} GWh/a")
 
@@ -753,8 +769,6 @@ def empty_df():
     st.session_state.df = df.astype({"value": float})
  
  
-def timestamp():
-    return pd.Timestamp.now().strftime("%Y%m%d%H%M%S")
  
 sankey_placeholder = st.empty()
 #-----draw sankey plot ---------------------------------------------------

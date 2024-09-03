@@ -59,10 +59,12 @@ div.st-emotion-cache-1l8gdore1nzilvr4 {
 }
 
 /*Sankey Plot*/
-div.st-emotion-cache-1kyxreq.e115fcil2 {
+div.st-emotion-cache-1v0mbdj.e115fcil1 {
+  background-color: white;
   padding: 3% 3% 3% 3%;
+  border-width: 20px;
   border-radius: 15px;
-  border-color: purple;
+  border-color:white;
 }
 
 /* Hide hamburger menu and footer */
