@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import altair as alt
 import numpy as np
 import plost
 from PIL import Image
@@ -704,30 +705,45 @@ b5.metric("CO2-emissions (assuming the german electricity mix [2024])",f"{round(
 b6.metric("average connection power",f"{round((((gesamtfabrik_ges_end-natural_gas_usage)/8760)*10**3),2)} MW")
 b7.metric("Total electricity input",f"{round((gesamtfabrik_ges_end-natural_gas_usage),2)} GWh/a")
 
-
+#leave some space
+st.markdown("***")
 #-----Row C-----------------------------------------------------------------
-Nutzlastdiagramm = pd.DataFrame({
-    "name": ["cooling output","heat output", "eletric energy output"],
-    "energy output": [ gesamtfabrik_k_nutz, gesamtfabrik_w_nutz, gesamtfabrik_s_nutz],
-    "color": ["#779ecb","#89e894", "#ff6961"]
-})
+
+
+st.title("Graphs & Charts")
+ch1,ch2,ch3 = st.columns([6,1,2])
+with ch1:
+    source_nutz = pd.DataFrame({"form of energy": ["heat energy", "cooling energy", "electrical energy"], "value": [gesamtfabrik_w_nutz,gesamtfabrik_k_nutz,gesamtfabrik_s_nutz]})
+
+    source_end = pd.DataFrame({"form of energy": ["electricity", "natural gas"], "value": [(gesamtfabrik_ges_end-natural_gas_usage),natural_gas_usage]})
+
+    chart_nutz = alt.Chart(source_nutz).mark_arc(innerRadius=50).encode(
+            theta=alt.Theta(field="value", type="quantitative"),
+            color=alt.Color(field="form of energy", type="nominal"),
+            )
+    chart_end = alt.Chart(source_end).mark_arc(innerRadius=50).encode(
+            theta=alt.Theta(field="value", type="quantitative"),
+            color=alt.Color(field="form of energy", type="nominal"),
+            )
+
+    tab1, tab2 = st.tabs(["Energy Output", "Energy Input"])
+
+    with tab1:
+            st.altair_chart(chart_nutz, theme="streamlit", use_container_width=True)
+    with tab2:
+            st.altair_chart(chart_end, theme="streamlit", use_container_width=True)
+
+with ch3:
+    st.write("#")
+    st.write("These plots are subject to change and i am still looking for the ideal way to visualize the data :D so please come forward and give me ideas on how to plot the data in the most intuitive way")
 
 
 
-c1, c2= st.columns(2)
-with c1:
-    st.markdown("**shares of energy output**")
-    st.bar_chart(
-        data=Nutzlastdiagramm,
-        x="name",
-        y="energy output",
-        color="color"
-    )
 
 
 #---------Row D - SANKEY DIAGRAM-----------------------------------------------------
 #-----define sankey states-------------------------------------------------------
-    if energy_concept == "Erdgas-Kessel":
+if energy_concept == "Erdgas-Kessel":
         df = pd.DataFrame(
             {
                 "source": ["Electricity", "Electricity", "Natural Gas", "Electric Energy Output", "Heat Energy Output", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Cooling Energy Output"],
@@ -735,7 +751,7 @@ with c1:
                 "value": [gesamtfabrik_s_end, gesamtfabrik_k_end, gesamtfabrik_w_end, PRO_GWh_s_nutz, 0, PRO_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz, RuT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, RLT_GWh_k_nutz],
             }
         )
-    if energy_concept == "Blockheizkraftwerk":
+if energy_concept == "Blockheizkraftwerk":
         df = pd.DataFrame(
             {
                 "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Natural Gas", "Building", "Building", "Building","Electricity", "Natural Gas", "Dry Room","Dry Room", "Dry Room"],
@@ -743,7 +759,7 @@ with c1:
                 "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end), RLT_GWh_w_end, RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end), RuT_GWh_w_end, RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
             }
         )
-    if energy_concept == "Wärmepumpe":
+if energy_concept == "Wärmepumpe":
         df = pd.DataFrame(
             {
                 "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Building", "Building", "Building","Electricity", "Dry Room","Dry Room", "Dry Room"],
@@ -752,7 +768,7 @@ with c1:
             }
         )
         
-    if energy_concept == "Kombi-Wärmepumpe":
+if energy_concept == "Kombi-Wärmepumpe":
         df = pd.DataFrame(
             {
                 "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Building", "Building", "Building","Electricity", "Dry Room","Dry Room", "Dry Room"],
@@ -791,6 +807,6 @@ def empty_df():
  
 sankey_placeholder = st.empty()
 #-----draw sankey plot ---------------------------------------------------
-st.markdown("**Sankey-plot**")
+st.title("Sankey-Plot")
 draw_sankey(df)
 #--------------------------by tarek lichtenfeld, august 2024------------------------------------

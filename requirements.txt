@@ -1,7 +1,8 @@
+altair==5.4.1
 geopy==2.4.1
 matplotlib==3.9.2
 meteostat==1.6.8
-numpy==2.1.0
+numpy==2.1.1
 pandas==2.2.2
 Pillow==10.4.0
 Plost==0.2.5
