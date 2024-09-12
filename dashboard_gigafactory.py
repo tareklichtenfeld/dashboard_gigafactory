@@ -104,8 +104,8 @@ st.sidebar.pydeck_chart(map)
 
 production_capacity= st.sidebar.slider('production capacity [GWh/a]', 2, 150, 40)
 cell_format = st.sidebar.selectbox('cell format', ('Pouch', 'Rund', 'Prismatisch'))
-automation_degree = st.sidebar.selectbox('degree of automation',('Niedrig','Mittel','Hoch'))
-production_setup = st.sidebar.selectbox('cell chemistry',('NMC 811','NCA...'))
+automation_degree = st.sidebar.selectbox('degree of automation',('low','normal','high'))
+production_quality = st.sidebar.selectbox('production quality standards',('low','normal', 'high'))
 production_days = st.sidebar.slider('production days per year', 1, 315, 315)
 energy_concept = st.sidebar.selectbox('energy concept', ('Erdgas-Kessel', 'Blockheizkraftwerk', 'Wärmepumpe', 'Kombi-Wärmepumpe')) 
 st.sidebar.subheader('Developer Options')
@@ -258,6 +258,8 @@ t_kelvin = [float(value) for value in modified_data]
 f_abs = []
 cool_data = []
 heat_data = []
+heat_data_partial = []
+cool_data_partial = []
 cop_data = []
 eert_data = []
 strom_wp_k_end = []
@@ -265,12 +267,14 @@ strom_wp_w_end = []
 brennstoff_w_end = []
 strom_electr_end = []
 
+
 # make list with hours--------------------------------------
 station_time_data = list(range(len(t)))
 
 
 #---------------------------FORMULAS----------------------------------------------------------------------------
 production_day_factor = production_days/365
+standby_day_factor = (365-production_days)/365
 
 #-----Anschlussleistung (Demo für Finn)-------------------------
 def Anschlussleistung(x):
@@ -307,11 +311,11 @@ def MA_in_RuT(x, cell_format):
 
 #MA Umrechnung nach Automatisierungsgrad--------------------
 def MA_nach_Automatisierungsgrad(x2):
-    if automation_degree == 'Niedrig':
+    if automation_degree == 'low':
         return x2*1.2
-    if automation_degree == 'Mittel':
+    if automation_degree == 'normal':
         return x2
-    if automation_degree == 'Hoch':
+    if automation_degree == 'high':
         return x2*0.8
     else:
         return x2
@@ -397,6 +401,8 @@ def heat_full_dp60_2rotor(x,y):
 def electr_full_dp60_2rotor():
     return(73)
 
+
+#-----dp60 2rotor---------------------------------------------
 def cool_full_dp40_2rotor(x, y): 
     return ( 6.961 - 0.111 * x + 0.0695 * y + 0.002363 * x**2 - 0.007255 * x * y - 0.01146 * y**2 + 7.129e-05 * x**3 - 0.0001515 * x**2 * y + 0.002808 * x * y**2 - 0.003271 * y**3 - 2.057e-06 * x**4 + 9.04e-06 * x**3 * y - 6.803e-05 * x**2 * y**2 + 3.704e-05 * x * y**3 + 0.0001348 * y**4 )
 
@@ -406,6 +412,10 @@ def heat_full_dp40_2rotor(x, y):
 def electr_full_dp40_2rotor(): 
     return(5.258)
 
+
+#-----TEILLAST------------------------------------------------------
+def cool_partial_dp60_3rotor(x,y):
+    return(x)
 
 
 
@@ -499,6 +509,12 @@ for i in range(len(t)):
     heat_val = heat_full_dp40_2rotor(temp_val, hum_abs_val)
     heat_data.append(heat_val)
     
+    #partial_heat_val = dryroom_heat_partial(temp_val, hum_abs_val)
+    #heat_data_partial.append(partial_heat_val)
+    
+    #cool_val_partial = dryroom_cool_partial(temp_val, hum_abs_val)
+    #heat_data_partial.append(cool_val_partial)
+    
     #End-Kühlleistung berechnen
     strom_wp_k_end.append(strom_eert(eert_val, cool_val))
     
@@ -521,23 +537,26 @@ cop_kkm = 6.1
 
 #---------------------BERECHNUNG DER ENDLAST ZUM GESAMTENERGIEBEDARF----------------------------------------------------------------
 #-----REIN_ UND TROCKENRAUM--------------------------------------------------------------------------------------------
+MA_factor = (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)
 #-----Kälte RuT gesamt ausgeben-------------------------------------------------------------------------
-RuT_GWh_k_nutz = sum(cool_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
+RuT_GWh_k_nutz = sum(cool_data)/10**6 * MA_factor*production_day_factor
 
 if energy_concept == 'Kombi-Wärmepumpe':
     RuT_GWh_k_end = kombi_wp_k_end(RuT_GWh_k_nutz)
 else:
-    RuT_GWh_k_end = sum(strom_wp_k_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
+    RuT_GWh_k_end = sum(strom_wp_k_end)/10**6 * MA_factor*production_day_factor
+
+
 
 #-----Wärme RuT gesamt ausgeben--------------------------------------------------------------------------
-RuT_GWh_w_nutz = sum(heat_data)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
+RuT_GWh_w_nutz = sum(heat_data)/10**6 * MA_factor *production_day_factor
 
 if energy_concept == 'Erdgas-Kessel':
-    RuT_GWh_w_end = sum(brennstoff_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
+    RuT_GWh_w_end = sum(brennstoff_w_end)/10**6 * MA_factor *production_day_factor
 if energy_concept == 'Blockheizkraftwerk':
     RuT_GWh_w_end = bhkw_w_wirkungsgrad(RuT_GWh_w_nutz)
 if energy_concept == 'Wärmepumpe':
-    RuT_GWh_w_end = sum(strom_wp_w_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
+    RuT_GWh_w_end = sum(strom_wp_w_end)/10**6 * MA_factor *production_day_factor
 if energy_concept == 'Kombi-Wärmepumpe':
     RuT_GWh_w_end = kombi_wp_w_end(RuT_GWh_w_nutz)
 
@@ -628,7 +647,7 @@ gesamtfabrik_s_end = (RuT_GWh_s_end+PRO_GWh_s_end+RLT_GWh_s_end)
 gesamtfabrik_ges_end = gesamtfabrik_k_end + gesamtfabrik_w_end + gesamtfabrik_s_end
 
 #-----Gesamtfabrik Daten & Werte----------------------------------------------
-energiefaktor = gesamtfabrik_ges_nutz/production_capacity
+energiefaktor = gesamtfabrik_ges_end/production_capacity
 
 
 #-----Emissionen--------------------------------------------------------------------------------
@@ -711,9 +730,9 @@ with c1:
     if energy_concept == "Erdgas-Kessel":
         df = pd.DataFrame(
             {
-                "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Natural Gas", "Building", "Building", "Building","Electricity", "Natural Gas", "Dry Room","Dry Room", "Dry Room"],
-                "target": ["Manufacturing", "Electric Energy Output", "Cooling Energy Output", "Building", "Building", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Dry Room", "Dry Room", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output"],
-                "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end), RLT_GWh_w_end, RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end), RuT_GWh_w_end, RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
+                "source": ["Electricity", "Electricity", "Natural Gas", "Electric Energy Output", "Heat Energy Output", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Cooling Energy Output"],
+                "target": ["Electric Energy Output", "Cooling Energy Output", "Heat Energy Output", "Manufacturing", "Manufacturing", "Manufacturing", "Dry Room", "Dry Room","Dry Room", "Building", "Building", "Building"],
+                "value": [gesamtfabrik_s_end, gesamtfabrik_k_end, gesamtfabrik_w_end, PRO_GWh_s_nutz, 0, PRO_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz, RuT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, RLT_GWh_k_nutz],
             }
         )
     if energy_concept == "Blockheizkraftwerk":
