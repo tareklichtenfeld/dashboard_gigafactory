@@ -15,7 +15,7 @@ import pydeck as pdk
 from geopy.geocoders import Nominatim
 
 # Page setting
-st.set_page_config(page_title="Gigafactory-Skaleriungstool",
+st.set_page_config(page_title="Gigafactory-Skalierungstool",
                    layout="wide",
                    page_icon=":battery:")
 
