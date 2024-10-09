@@ -30,16 +30,31 @@ div.css-wnm74r.e16fv1kl3 {
 /* popup window */ 
 div.st-emotion-cache-jpcrdf.e1f1d6gn2 {
   background-color: #fdff8c;
-  padding: 3% 3% 3% 3%;
+  padding: 1% 1% 1% 1%;
   border-width: 5px;
   border-radius: 5px;
   border-color: purple;
 }
 
+/*Your Factory header (mit Stats)*/
+div.stColumn.st-emotion-cache-6vw1hb.e1f1d6gn3 {
+  background-color: #7f8acc;
+  padding: 2% 2% 2% 2%;
+  border-width: 5px;
+  border-radius: 20px;
+}
+
+/* Boxen um die Fenster*/
+div.st-emotion-cache-a8yfru.e1f1d6gn0 {
+  background-color: #83d1a1;
+  padding: 2% 2% 2% 2%;
+  border-width: 5px;
+  border-radius: 20px;
+}
 /* Row 1 */
 div.st-emotion-cache-1r6slb0.e1f1d6gn3 {
     background-color: #fdff8c;
-    padding: 3% 3% 3% 3%;
+    padding: 1% 1% 1% 1%;
     border-width: 20px;
     border-radius: 15px;
     border-color: purple;
@@ -48,7 +63,7 @@ div.st-emotion-cache-1r6slb0.e1f1d6gn3 {
 /* Row 2 */
 div.st-emotion-cache-12w0qpk.e1f1d6gn3 {
   background-color: #fdff8c;
-  padding: 3% 3% 3% 3%;
+  padding: 1% 1% 1% 1%;
   border-width: 20px;
   border-radius: 15px;
   border-color: purple;

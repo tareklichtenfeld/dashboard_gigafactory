@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_extras.stylable_container import stylable_container
 import pandas as pd
 import altair as alt
 import numpy as np
@@ -22,6 +23,7 @@ st.set_page_config(page_title="Gigafactory-Skalierungstool",
 with open('style.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
+st.logo("Gigafactory Builder Logo.png", size="large")
 #-----test map 2-----------------------------------------------------------
 # Center coordinates (adjust as needed)
 
@@ -95,19 +97,19 @@ icon = pdk.Layer(
 map = pdk.Deck(
     initial_view_state=view_state,
     layers=[icon],
-    map_style=f"mapbox://styles/mapbox/{'streets-v11'}"
+    map_style=f"mapbox://styles/mapbox/{'streets-v11'}",
 )
 
-st.sidebar.pydeck_chart(map)
+st.sidebar.pydeck_chart(map, height=250)
 
 #----------------------------------------------------------------------------------------------------------
 
-
-production_capacity= st.sidebar.slider('production capacity [GWh/a]', 2, 150, 40)
+with st.sidebar.container(border=True):
+    production_capacity= st.sidebar.slider('production capacity [GWh/a]', 2, 150, 40)
 cell_format = st.sidebar.selectbox('cell format', ('Pouch', 'Rund', 'Prismatisch'))
 automation_degree = st.sidebar.selectbox('degree of automation',('low','normal','high'))
-production_quality = st.sidebar.selectbox('production quality standards',('low','normal', 'high'))
-production_days = st.sidebar.slider('production days per year', 1, 315, 315)
+dew_point = st.sidebar.selectbox('dew point in dry rooms',('-20 °C','-30 °C', '-40 °C', '-50 °C', '-60 °C'))
+production_days = st.sidebar.slider('production days per year', 1, 365, 315)
 energy_concept = st.sidebar.selectbox('energy concept', ('Erdgas-Kessel', 'Blockheizkraftwerk', 'Wärmepumpe', 'Kombi-Wärmepumpe')) 
 st.sidebar.subheader('Developer Options')
 year = st.sidebar.slider('year of production', 2003, 2023, 2023)
@@ -119,58 +121,38 @@ Created by Tarek Lichtenfeld :)
 ''')
 
 #-----HEADER------------------------------------------------------------------
-st.header('Gigafactory `Builder`')
-
-#-----popup when opening
-modal = Modal(
-    "Introduction", 
-    key="demo-modal",
-    
-    # Optional
-    padding=20,    # default value
-    max_width=744  # default value
-)
-
-open_modal = st.button("First Time?")
-if open_modal:
-    modal.open()
-
-if modal.is_open():
-    with modal.container():
+header1, header2 = st.columns([2,5])
+with header1:
+    st.header('Gigafactory `Builder`')
+    with st.popover("First Time? 👋"):
         st.write("Hey there 👋🏻")
         st.write("I'm Tarek and I created this interactive dashboard to visualize and compare the power-input and -output of gigafactories for battery cell production. The sidebar on the left side of the screen contains all the parameters that can be changed to your preferences. Do you want to build a 100 GWh gigafactory on the Bahamas but you want low carbon dioxide emissions? Just choose the location and energy concept and you'll immediately notice the drastic impact your decisions have on the power consumption. Feel free to play around and test out the countless combinations of input parameters.")
         st.write("Enjoy :)")
-        
-        close_modal = st.button("Let's do this")
-        if close_modal:
-            modal.close()
+with header2:
+    with stylable_container(
+            key="top_battery",
+            css_styles="""
+                button {
+                    background-color: #83d1a1;
+                    padding: 2% 2% 2% 2%;
+                    border-width: 5px;
+                    border-radius: 20px;
+                }
+                """
+        ):
+        st.subheader(":material/factory: Your Factory")
+        battery1, battery2, battery3 = st.columns(3)
+        with battery1:
+            st.metric(label=":material/conveyor_belt: Production Capacity [GWh/a]", value=production_capacity)
+        with battery2:
+            st.metric(label=":material/battery_unknown: Cell Format", value=cell_format)
+        with battery3:
+            st.metric(label=":material/calendar_month: Production Days", value=production_days)
 
-
-
+#-----popover---------------------------------------------------
 
 
 #---------------------------WEATHER DATA-----------------------------------------------
-#-----assort coordinates to locations
-
-def get_coordinates(location):
-    coordinates_dict = {
-        'Germany': (51.962099672722246, 7.6260690597081355),
-        'Norway': (69.65083068941327, 18.95616203587009),
-        'Texas, USA': (35.19429133374373, -101.85247871892864),
-        'Mexico': (25.690794191837405, -100.31597776954884),
-        'Chile': (-22.46061693078931, -68.92687992157762),
-        'Brasil': (2.8168900489923048, -60.68063433499766),
-        'Qatar': (25.253853158779187, 51.34762132032399),
-        'Russia': (53.7057509164329, 91.39067030182092),
-        'Greenville, South Carolina': (34.849191725553155, -82.39028917600623)
-    }
-    return coordinates_dict.get(location, None)
-
-
-#-----get coordinates from chosen location-------------------
-# latitude, longitude = get_coordinates(location)
-#----Choose date from sidebar----------------------------------------
-
 #----start_date----------------------
 def get_start_dates(date):
     dates_dict = {}
@@ -325,7 +307,7 @@ def MA_nach_Automatisierungsgrad(x2):
 #-----PROZESSENERGIE--------------------------------------------------------
 #-----Elektrische Last--------------------------------------------
 def Prozess_Stromnutzlast(x):
-    day_factor=315/315
+    day_factor=365/315
     if cell_format == 'Pouch':
         return 25.86493*x*day_factor
     if cell_format == 'Rund':
@@ -335,7 +317,7 @@ def Prozess_Stromnutzlast(x):
     
 #-----Kälte-Nutzlast--------------------------------------------
 def Prozess_Kaeltenutzlast(x):
-    day_factor=315/315
+    day_factor=365/315
     if cell_format == 'Pouch':
         return 8.14149*x*day_factor
     if cell_format == 'Rund':
@@ -648,7 +630,7 @@ gesamtfabrik_s_end = (RuT_GWh_s_end+PRO_GWh_s_end+RLT_GWh_s_end)
 gesamtfabrik_ges_end = gesamtfabrik_k_end + gesamtfabrik_w_end + gesamtfabrik_s_end
 
 #-----Gesamtfabrik Daten & Werte----------------------------------------------
-energiefaktor = gesamtfabrik_ges_end/production_capacity
+energiefaktor = gesamtfabrik_ges_end/(production_capacity*production_day_factor)
 
 
 #-----Emissionen--------------------------------------------------------------------------------
@@ -669,6 +651,9 @@ elif energy_concept=="Erdgas-Kessel":
 else:
     natural_gas_usage=0
 
+#-----natural gas in m³------------------------------------------
+mio_cubic_meters = ((10**6 * natural_gas_usage)/11) / 10**6
+mio_cubic_meters_daily = mio_cubic_meters/365
 
 
 if energy_concept=="Blockheizkraftwerk":
@@ -681,29 +666,49 @@ else:
 
 
 #-----TOTAl------
-natural_gas_emissions_tons=(co2_electric(electricity_usage)+co2_natual_gas(natural_gas_usage))/10**3 
+natural_gas_emissions_kilotons=(co2_electric(electricity_usage)+co2_natual_gas(natural_gas_usage))/10**6 
 
 
 #--------------------DATA VISUALIZER-----------------------------------------------------------------------------------
+#-----Differenzen------------------------------------------
+if cell_format == "Pouch":
+    avg_energiefaktor=45
+if cell_format == "Rund":
+    avg_energiefaktor=50
+if cell_format == "Prismatisch":
+    avg_energiefaktor=55
+dif_energiefaktor=(1-(energiefaktor/avg_energiefaktor))*100
+
+
 #-----Row A-----------------------------------------------------------------
-a1, a2, a3 = st.columns(3)
-a1.image(Image.open('streamlit-logo-secondary-colormark-darktext.png'))
-a2.metric("energy factor", f"{round(energiefaktor,2)} kWh/kWhcell ")
-a3.metric("Total energy output", f"{round(gesamtfabrik_ges_nutz,2)} GWh/a")
+container_a = st.container(border=True)
+with container_a:
+    st.subheader(":material/key: Key Values")
+    a1, a2, a3, a4= st.columns(4)
+    a1.metric(":material/energy_program_time_used: energy factor [kWh/kWhcell]", f"{round(energiefaktor,2)}", delta=f"{round(dif_energiefaktor, 1)} %" )
+    a2.metric(":material/bolt: Estimated Connection power",f"{round(((((gesamtfabrik_ges_end-natural_gas_usage)/8760)*1.2)*10**3),2)} MW")
+    a3.metric(":material/power: Total electricity input [GWh/a]",round((gesamtfabrik_ges_end-natural_gas_usage),2))
+    a4.metric(":material/water_drop: Natural Gas input [mio. m³/a]", round(mio_cubic_meters,2) )
 
 #-----Row B-----------------------------------------------------------------
-b1, b2, b3, b4 = st.columns(4)
-b1.metric("Heat energy output",f"{round(gesamtfabrik_w_nutz,2)} GWh/a")
-b2.metric("cooling energy output",f"{round(gesamtfabrik_k_nutz,2)} GWh/a")
-b3.metric("electrical energy output",f"{round(gesamtfabrik_s_nutz,2)} GWh/a")
-b4.metric("Total energy input",f"{round(gesamtfabrik_ges_end,2)} GWh/a")
+container_b = st.container(border=True)
+with container_b:
+    st.subheader(":material/energy_program_time_used: Energy Usage by type")
+    b1, b2, b3, b4 = st.columns(4)
+    b1.metric(":material/heat: Heat energy output",f"{round(gesamtfabrik_w_nutz,2)} GWh/a")
+    b2.metric(":material/mode_cool: Cooling energy output",f"{round(gesamtfabrik_k_nutz,2)} GWh/a")
+    b3.metric(":material/bolt: Electrical energy output",f"{round(gesamtfabrik_s_nutz,2)} GWh/a")
+    b4.metric("Total energy output", f"{round(gesamtfabrik_ges_nutz,2)} GWh/a")
 
 
 #-----row b2---------------------------------------------------------------
-b5, b6, b7 = st.columns(3)
-b5.metric("CO2-emissions (assuming the german electricity mix [2024])",f"{round((natural_gas_emissions_tons),1)} tons/year")
-b6.metric("average connection power",f"{round((((gesamtfabrik_ges_end-natural_gas_usage)/8760)*10**3),2)} MW")
-b7.metric("Total electricity input",f"{round((gesamtfabrik_ges_end-natural_gas_usage),2)} GWh/a")
+container_c = st.container(border=True)
+with container_c:
+    st.subheader(":material/analytics: Additional Information")
+    b5, b6, b7 = st.columns(3)
+    b5.metric(":material/nature: CO2-emissions [kilotons/year]",round((natural_gas_emissions_kilotons),1))
+    b6.metric("Total energy input [GWh/a]", round(gesamtfabrik_ges_end,2))
+    b7.metric(":material/power: Total electricity input",f"{round((gesamtfabrik_ges_end-natural_gas_usage),2)} GWh/a")
 
 #leave some space
 st.markdown("***")
@@ -806,7 +811,10 @@ def empty_df():
  
  
 sankey_placeholder = st.empty()
+
 #-----draw sankey plot ---------------------------------------------------
-st.title("Sankey-Plot")
-draw_sankey(df)
+container_sankey = st.container(border=True)
+with container_sankey:
+    st.title("Sankey-Plot")
+    draw_sankey(df)
 #--------------------------by tarek lichtenfeld, august 2024------------------------------------
