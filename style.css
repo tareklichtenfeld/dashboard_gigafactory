@@ -51,6 +51,30 @@ div.st-emotion-cache-a8yfru.e1f1d6gn0 {
   border-width: 5px;
   border-radius: 20px;
 }
+
+/*Textinput-Umrahmung*/
+div.stTextInput {
+  background-color: #83d1a1;
+  padding: 3% 3% 3% 3%;
+  border-width: 5px;
+  border-radius: 20px;
+}
+
+/*selectboxen-Umrahmung*/
+div.stSelectbox {
+  background-color: #83d1a1;
+  padding: 3% 3% 3% 3%;
+  border-width: 5px;
+  border-radius: 20px;
+}
+
+/*Slider-Umrahmung*/
+div.stSlider {
+  background-color: #83d1a1;
+  padding: 3% 3% 3% 3%;
+  border-width: 5px;
+  border-radius: 20px;
+}
 /* Row 1 */
 div.st-emotion-cache-1r6slb0.e1f1d6gn3 {
     background-color: #fdff8c;
@@ -68,17 +92,24 @@ div.st-emotion-cache-12w0qpk.e1f1d6gn3 {
   border-radius: 15px;
   border-color: purple;
 }
+/*image at bottom*/
+div.img {
+  background-color: #fdff8c;
+  padding: 3% 3% 3% 3%;
+  border-width: 5px;
+  border-radius: 20px;
+}
 
 div.st-emotion-cache-1l8gdore1nzilvr4 {
   size: 50px;
 }
 
-/*Sankey Plot*/
+/*Sankey Plot WHite Background*/
 div.st-emotion-cache-1v0mbdj.e115fcil1 {
   background-color: white;
   padding: 3% 3% 3% 3%;
   border-width: 20px;
-  border-radius: 15px;
+  border-radius: 20px;
   border-color:white;
 }
 

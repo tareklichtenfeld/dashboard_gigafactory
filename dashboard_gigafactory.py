@@ -29,35 +29,21 @@ st.logo("Gigafactory Builder Logo.png", size="large")
 
 
 #-----SIDEBAAARRR----------------------------------------------------------
-st.sidebar.header('Gigafactory `Builder`')
-st.sidebar.subheader('selectable planning parameters')
+st.sidebar.header('selectable planning parameters')
 
 #-----INFO BUTTON-----------------------------------
-if st.sidebar.button('what do the buttons mean?'):
-    st.sidebar.markdown(f"""
-        <div style="text-align: left;">
-            <p><strong>Explanation of the parameters</strong></p>
-            <ul style="list-style: none;">
-                <p><li><strong>Location:</strong> Sets the location of your gigafactory. The climate of the location can drastically change the energy demand of the factory.</li></p>
-                <p><li><strong>Production Capacity:</strong> Determines how much battery capacity will be produced in your factory per year. </li></p>
-                <p><li><strong>Cell Format:</strong> Different cell formats have different manufacturing steps and requirements. Choose between the three most common formats.  </li></p>
-                <p><li><strong>Automation Degree:</strong> Depending on the degree of automation, more or less people are working in the dry rooms, which also has an impact on energy demand. </li></p>
-                <p><li><strong>Cell Chemistry</strong> Every cell chemistry has different requirements for the dry room and manufacturing steps. </li></p>
-                <p><li><strong>Production Days per Year:</strong> How many days is your factory running on full manufacturing capacity? If you set this to less than 315 days, the production capacity has to be seen as theoretical, as there of course will be less battery cells produced if you have fewer production days.</li></p>
-                <p><li><strong>Energy Concept:</strong> The energy concept defines where the energy is coming from. Depending on your choice, the heat output is generated with electricity through a heat pump, or with natural gas. </li></p>
-                <p><li><strong>Year of Production:</strong> Experimental feature that changes the reference year the Gigafactory Builder uses to calculate the energy demand of the process steps depending on outside temperature.</li></p>
-            </ul>
-        </div>
-    """, unsafe_allow_html=True)
-    if st.sidebar.button('unterstood, thanks :D'):
-        st.sidebar.markdown()
-        
-
-#location = st.sidebar.selectbox('location', ('Germany', 'Norway', 'Texas, USA', 'Mexico', 'Chile', 'Brasil', 'Qatar', 'Greenville, South Carolina' ))
-
+with st.sidebar.expander('**:material/info: What do the buttons mean?**'):
+    st.markdown("**Location:** Sets the location of your gigafactory. The climate of the location can drastically change the energy demand of the factory.")
+    st.markdown("**Production Capacity:** Determines how much battery capacity will be produced in your factory per year. ")
+    st.markdown("**Cell Format:** Different cell formats have different manufacturing steps and requirements. Choose between the three most common formats.")
+    st.markdown("**Automation Degree:** Depending on the degree of automation, more or less people are working in the dry rooms, which also has an impact on energy demand. ")
+    st.markdown("**Cell Chemistry** Every cell chemistry has different requirements for the dry room and manufacturing steps. ")
+    st.markdown("**Production Days per Year:** How many days is your factory running on full manufacturing capacity? If you set this to less than 315 days, the production capacity has to be seen as theoretical, as there of course will be less battery cells produced if you have fewer production days.")
+    st.markdown("**Energy Concept:** The energy concept defines where the energy is coming from. Depending on your choice, the heat output is generated with electricity through a heat pump, or with natural gas. ")
+    st.markdown("**Weather Reference Year:** Experimental feature that changes the reference year the Gigafactory Builder uses to calculate the energy demand of the process steps depending on outside temperature.")
 
 #-----GET GEOPY LOCATION COORDINATES-----------------------------------------------------------
-location_geopy= st.sidebar.text_input("location","Münster")
+location_geopy= st.sidebar.text_input("**:material/location_on: location**","Münster")
 
 from geopy.geocoders import Nominatim
 geolocator = Nominatim(user_agent="user_agent")
@@ -69,7 +55,6 @@ lon = location.longitude
 
 
 #-----Display the map----------------------------------------------------------------------
-
 center_lng = lon
 center_lat = lat
 
@@ -105,14 +90,14 @@ st.sidebar.pydeck_chart(map, height=250)
 #----------------------------------------------------------------------------------------------------------
 
 with st.sidebar.container(border=True):
-    production_capacity= st.sidebar.slider('production capacity [GWh/a]', 2, 150, 40)
-cell_format = st.sidebar.selectbox('cell format', ('Pouch', 'Rund', 'Prismatisch'))
-automation_degree = st.sidebar.selectbox('degree of automation',('low','normal','high'))
-dew_point = st.sidebar.selectbox('dew point in dry rooms',('-20 °C','-30 °C', '-40 °C', '-50 °C', '-60 °C'))
-production_days = st.sidebar.slider('production days per year', 1, 365, 315)
-energy_concept = st.sidebar.selectbox('energy concept', ('Erdgas-Kessel', 'Blockheizkraftwerk', 'Wärmepumpe', 'Kombi-Wärmepumpe')) 
+    production_capacity= st.sidebar.slider('**production capacity [GWh/a]**', 2, 150, 40)
+cell_format = st.sidebar.selectbox('**cell format**', ('Pouch', 'Rund', 'Prismatisch'))
+automation_degree = st.sidebar.selectbox('**degree of automation**',('low','normal','high'))
+dew_point = st.sidebar.selectbox('**dew point in dry rooms**',('-20 °C','-30 °C', '-40 °C', '-50 °C', '-60 °C'))
+production_days = st.sidebar.slider('**production days per year**', 1, 365, 315)
+energy_concept = st.sidebar.selectbox('**energy concept**', ('Natural Gas Boiler', 'Cogeneration Unit', 'Heat Pump', 'Hybrid Heat Pump')) 
 st.sidebar.subheader('Developer Options')
-year = st.sidebar.slider('year of production', 2003, 2023, 2023)
+year = st.sidebar.slider('**weather reference year**', 2003, 2023, 2023)
 
 
 st.sidebar.markdown('''
@@ -447,7 +432,7 @@ def bhkw_s_wirkungsgrad(x):
     n = 0.05
     return x*n
 
-#-----Konzept 3 - Wärmepumpe--------------------------------------------
+#-----Konzept 3 - Heat Pump--------------------------------------------
 def strom_cop(n_c, waerme):
     end_waermeleistung = waerme/n_c
     return(end_waermeleistung)
@@ -501,7 +486,7 @@ for i in range(len(t)):
     #End-Kühlleistung berechnen
     strom_wp_k_end.append(strom_eert(eert_val, cool_val))
     
-    #Wärmepumpe
+    #Heat Pump
     #End-Wärmeleistung berechnen
     strom_wp_w_end.append(strom_cop(cop_val, heat_val))
     
@@ -524,7 +509,7 @@ MA_factor = (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_fo
 #-----Kälte RuT gesamt ausgeben-------------------------------------------------------------------------
 RuT_GWh_k_nutz = sum(cool_data)/10**6 * MA_factor*production_day_factor
 
-if energy_concept == 'Kombi-Wärmepumpe':
+if energy_concept == 'Hybrid Heat Pump':
     RuT_GWh_k_end = kombi_wp_k_end(RuT_GWh_k_nutz)
 else:
     RuT_GWh_k_end = sum(strom_wp_k_end)/10**6 * MA_factor*production_day_factor
@@ -534,20 +519,20 @@ else:
 #-----Wärme RuT gesamt ausgeben--------------------------------------------------------------------------
 RuT_GWh_w_nutz = sum(heat_data)/10**6 * MA_factor *production_day_factor
 
-if energy_concept == 'Erdgas-Kessel':
+if energy_concept == 'Natural Gas Boiler':
     RuT_GWh_w_end = sum(brennstoff_w_end)/10**6 * MA_factor *production_day_factor
-if energy_concept == 'Blockheizkraftwerk':
+if energy_concept == 'Cogeneration Unit':
     RuT_GWh_w_end = bhkw_w_wirkungsgrad(RuT_GWh_w_nutz)
-if energy_concept == 'Wärmepumpe':
+if energy_concept == 'Heat Pump':
     RuT_GWh_w_end = sum(strom_wp_w_end)/10**6 * MA_factor *production_day_factor
-if energy_concept == 'Kombi-Wärmepumpe':
+if energy_concept == 'Hybrid Heat Pump':
     RuT_GWh_w_end = kombi_wp_w_end(RuT_GWh_w_nutz)
 
 
 #-----Strom RuT gesamt ausgeben--------------------------------------------------------------------------
 RuT_GWh_s_nutz = sum(strom_electr_end)/10**6 * (MA_nach_Automatisierungsgrad(MA_in_RuT(production_capacity, cell_format))/2)*production_day_factor
 
-if energy_concept == 'Blockheizkraftwerk':
+if energy_concept == 'Cogeneration Unit':
     RuT_GWh_s_end = RuT_GWh_s_nutz - bhkw_s_wirkungsgrad(RuT_GWh_s_nutz)
 else:
     RuT_GWh_s_end = RuT_GWh_s_nutz
@@ -568,23 +553,23 @@ RLT_GWh_w_nutz = RLT_Waermelast(production_capacity)
 RLT_GWh_s_nutz = RLT_Stromlast(production_capacity)
 
 #-----Endwärme---------------------------------------------------------------------
-if energy_concept == 'Kombi-Wärmepumpe':
+if energy_concept == 'Hybrid Heat Pump':
     RLT_GWh_k_end = kombi_wp_k_end(RLT_GWh_k_nutz)
 else:
     RLT_GWh_k_end = strom_eert(eer_avg, RLT_GWh_k_nutz)
 
 #-----Endkälte---------------------------------------------------------------------
-if energy_concept == 'Erdgas-Kessel':
+if energy_concept == 'Natural Gas Boiler':
     RLT_GWh_w_end = brennwertkessel_wirkungsgrad(RLT_GWh_w_nutz)
-if energy_concept == 'Blockheizkraftwerk':
+if energy_concept == 'Cogeneration Unit':
     RLT_GWh_w_end = bhkw_w_wirkungsgrad(RLT_GWh_w_nutz)
-if energy_concept == 'Wärmepumpe':
+if energy_concept == 'Heat Pump':
     RLT_GWh_w_end = RLT_GWh_w_nutz/cop_avg
-if energy_concept == 'Kombi-Wärmepumpe':
+if energy_concept == 'Hybrid Heat Pump':
     RLT_GWh_w_end = kombi_wp_w_end(RLT_GWh_w_nutz)
 
 #-----Endstrom-------------------------------------------------------------------
-if energy_concept == 'Blockheizkraftwerk':
+if energy_concept == 'Cogeneration Unit':
     RLT_GWh_s_end = RLT_GWh_s_nutz - bhkw_s_wirkungsgrad(RLT_GWh_s_nutz)
 else:
     RLT_GWh_s_end = RLT_GWh_s_nutz
@@ -598,14 +583,14 @@ PRO_GWh_k_nutz = Prozess_Kaeltenutzlast(production_capacity)*production_day_fact
 PRO_GWh_s_nutz = Prozess_Stromnutzlast(production_capacity)*production_day_factor
 
 #-----Endkälte--------------------------------------------------------------------
-if energy_concept == 'Kombi-Wärmepumpe':
+if energy_concept == 'Hybrid Heat Pump':
     PRO_GWh_k_end = kombi_wp_k_end(PRO_GWh_k_nutz)
 else:
     PRO_GWh_k_end = strom_eert(eer_avg, PRO_GWh_k_nutz)
 
 
 #-----Endstrom-------------------------------------------------------------------
-if energy_concept == 'Blockheizkraftwerk':
+if energy_concept == 'Cogeneration Unit':
     PRO_GWh_s_end = PRO_GWh_s_nutz - bhkw_s_wirkungsgrad(RLT_GWh_s_nutz)
 else:
     PRO_GWh_s_end = PRO_GWh_s_nutz
@@ -644,9 +629,9 @@ def co2_electric(x):
     return(x*kg_co2_GWh)
 
 
-if energy_concept=="Blockheizkraftwerk":
+if energy_concept=="Cogeneration Unit":
     natural_gas_usage=gesamtfabrik_w_end+bhkw_s_wirkungsgrad(RLT_GWh_s_nutz)
-elif energy_concept=="Erdgas-Kessel":
+elif energy_concept=="Natural Gas Boiler":
     natural_gas_usage=gesamtfabrik_w_end
 else:
     natural_gas_usage=0
@@ -656,9 +641,9 @@ mio_cubic_meters = ((10**6 * natural_gas_usage)/11) / 10**6
 mio_cubic_meters_daily = mio_cubic_meters/365
 
 
-if energy_concept=="Blockheizkraftwerk":
+if energy_concept=="Cogeneration Unit":
     electricity_usage=gesamtfabrik_ges_end-(gesamtfabrik_w_end+bhkw_s_wirkungsgrad(RLT_GWh_s_nutz))
-elif energy_concept=="Erdgas-Kessel":
+elif energy_concept=="Natural Gas Boiler":
     electricity_usage=gesamtfabrik_ges_end-gesamtfabrik_w_end
 else:
     electricity_usage=gesamtfabrik_ges_end
@@ -687,7 +672,7 @@ with container_a:
     a1, a2, a3, a4= st.columns(4)
     a1.metric(":material/energy_program_time_used: energy factor [kWh/kWhcell]", f"{round(energiefaktor,2)}", delta=f"{round(dif_energiefaktor, 1)} %" )
     a2.metric(":material/bolt: Estimated Connection power",f"{round(((((gesamtfabrik_ges_end-natural_gas_usage)/8760)*1.2)*10**3),2)} MW")
-    a3.metric(":material/power: Total electricity input [GWh/a]",round((gesamtfabrik_ges_end-natural_gas_usage),2))
+    a3.metric(":material/power: Electricity input [GWh/a]",round((gesamtfabrik_ges_end-natural_gas_usage),2))
     a4.metric(":material/water_drop: Natural Gas input [mio. m³/a]", round(mio_cubic_meters,2) )
 
 #-----Row B-----------------------------------------------------------------
@@ -695,10 +680,10 @@ container_b = st.container(border=True)
 with container_b:
     st.subheader(":material/energy_program_time_used: Energy Usage by type")
     b1, b2, b3, b4 = st.columns(4)
-    b1.metric(":material/heat: Heat energy output",f"{round(gesamtfabrik_w_nutz,2)} GWh/a")
-    b2.metric(":material/mode_cool: Cooling energy output",f"{round(gesamtfabrik_k_nutz,2)} GWh/a")
-    b3.metric(":material/bolt: Electrical energy output",f"{round(gesamtfabrik_s_nutz,2)} GWh/a")
-    b4.metric("Total energy output", f"{round(gesamtfabrik_ges_nutz,2)} GWh/a")
+    b1.metric(":material/heat: Heat energy output [GWh/a]",round(gesamtfabrik_w_nutz,2))
+    b2.metric(":material/mode_cool: Cooling energy output [GWh/a]",round(gesamtfabrik_k_nutz,2))
+    b3.metric(":material/bolt: Electrical energy output [GWh/a]",round(gesamtfabrik_s_nutz,2))
+    b4.metric("Total energy output [GWh/a]", f"{round(gesamtfabrik_ges_nutz,2)}")
 
 
 #-----row b2---------------------------------------------------------------
@@ -708,39 +693,38 @@ with container_c:
     b5, b6, b7 = st.columns(3)
     b5.metric(":material/nature: CO2-emissions [kilotons/year]",round((natural_gas_emissions_kilotons),1))
     b6.metric("Total energy input [GWh/a]", round(gesamtfabrik_ges_end,2))
-    b7.metric(":material/power: Total electricity input",f"{round((gesamtfabrik_ges_end-natural_gas_usage),2)} GWh/a")
+    b7.metric(":material/power: Total electricity input [GWh/a]",round((gesamtfabrik_ges_end-natural_gas_usage),2))
 
 #leave some space
-st.markdown("***")
-#-----Row C-----------------------------------------------------------------
 
 
-st.title("Graphs & Charts")
-ch1,ch2,ch3 = st.columns([6,1,2])
-with ch1:
-    source_nutz = pd.DataFrame({"form of energy": ["heat energy", "cooling energy", "electrical energy"], "value": [gesamtfabrik_w_nutz,gesamtfabrik_k_nutz,gesamtfabrik_s_nutz]})
+#-----andere Charts, erstmal gestrichen.-----------------------------------------------------
+#st.title("Graphs & Charts")
+#ch1,ch2,ch3 = st.columns([6,1,2])
+#with ch1:
+    #source_nutz = pd.DataFrame({"form of energy": ["heat energy", "cooling energy", "electrical energy"], "value": [gesamtfabrik_w_nutz,gesamtfabrik_k_nutz,gesamtfabrik_s_nutz]})
 
-    source_end = pd.DataFrame({"form of energy": ["electricity", "natural gas"], "value": [(gesamtfabrik_ges_end-natural_gas_usage),natural_gas_usage]})
+    #source_end = pd.DataFrame({"form of energy": ["electricity", "natural gas"], "value": [(gesamtfabrik_ges_end-natural_gas_usage),natural_gas_usage]})
 
-    chart_nutz = alt.Chart(source_nutz).mark_arc(innerRadius=50).encode(
-            theta=alt.Theta(field="value", type="quantitative"),
-            color=alt.Color(field="form of energy", type="nominal"),
-            )
-    chart_end = alt.Chart(source_end).mark_arc(innerRadius=50).encode(
-            theta=alt.Theta(field="value", type="quantitative"),
-            color=alt.Color(field="form of energy", type="nominal"),
-            )
+    #chart_nutz = alt.Chart(source_nutz).mark_arc(innerRadius=50).encode(
+            #theta=alt.Theta(field="value", type="quantitative"),
+            #color=alt.Color(field="form of energy", type="nominal"),
+            #)
+    #chart_end = alt.Chart(source_end).mark_arc(innerRadius=50).encode(
+            #theta=alt.Theta(field="value", type="quantitative"),
+            #color=alt.Color(field="form of energy", type="nominal"),
+            #)
 
-    tab1, tab2 = st.tabs(["Energy Output", "Energy Input"])
+    #tab1, tab2 = st.tabs(["Energy Output", "Energy Input"])
 
-    with tab1:
-            st.altair_chart(chart_nutz, theme="streamlit", use_container_width=True)
-    with tab2:
-            st.altair_chart(chart_end, theme="streamlit", use_container_width=True)
+    #with tab1:
+            #st.altair_chart(chart_nutz, theme="streamlit", use_container_width=True)
+    #with tab2:
+            #st.altair_chart(chart_end, theme="streamlit", use_container_width=True)
 
-with ch3:
-    st.write("#")
-    st.write("These plots are subject to change and i am still looking for the ideal way to visualize the data :D so please come forward and give me ideas on how to plot the data in the most intuitive way")
+#with ch3:
+    #st.write("#")
+    #st.write("These plots are subject to change and i am still looking for the ideal way to visualize the data :D so please come forward and give me ideas on how to plot the data in the most intuitive way")
 
 
 
@@ -748,36 +732,36 @@ with ch3:
 
 #---------Row D - SANKEY DIAGRAM-----------------------------------------------------
 #-----define sankey states-------------------------------------------------------
-if energy_concept == "Erdgas-Kessel":
+if energy_concept == "Natural Gas Boiler":
         df = pd.DataFrame(
             {
-                "source": ["Electricity", "Electricity", "Natural Gas", "Electric Energy Output", "Heat Energy Output", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Cooling Energy Output"],
-                "target": ["Electric Energy Output", "Cooling Energy Output", "Heat Energy Output", "Manufacturing", "Manufacturing", "Manufacturing", "Dry Room", "Dry Room","Dry Room", "Building", "Building", "Building"],
+                "source": ["Electricity", "Electricity", "Natural Gas", "Grid Connection", "Natural Gas Boiler", "Cooling Unit", "Grid Connection", "Natural Gas Boiler", "Cooling Unit", "Grid Connection", "Natural Gas Boiler", "Cooling Unit"],
+                "target": ["Grid Connection", "Cooling Unit", "Natural Gas Boiler", "Manufacturing", "Manufacturing", "Manufacturing", "Dry Room", "Dry Room","Dry Room", "Building", "Building", "Building"],
                 "value": [gesamtfabrik_s_end, gesamtfabrik_k_end, gesamtfabrik_w_end, PRO_GWh_s_nutz, 0, PRO_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz, RuT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, RLT_GWh_k_nutz],
             }
         )
-if energy_concept == "Blockheizkraftwerk":
+if energy_concept == "Cogeneration Unit":
         df = pd.DataFrame(
             {
                 "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Natural Gas", "Building", "Building", "Building","Electricity", "Natural Gas", "Dry Room","Dry Room", "Dry Room"],
-                "target": ["Manufacturing", "Electric Energy Output", "Cooling Energy Output", "Building", "Building", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Dry Room", "Dry Room", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output"],
+                "target": ["Manufacturing", "Electric Energy Output", "Cooling Unit", "Building", "Building", "Cooling Unit", "Electric Energy Output", "Heat Energy Output", "Dry Room", "Dry Room", "Cooling Unit", "Electric Energy Output", "Heat Energy Output"],
                 "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end), RLT_GWh_w_end, RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end), RuT_GWh_w_end, RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
             }
         )
-if energy_concept == "Wärmepumpe":
+if energy_concept == "Heat Pump":
         df = pd.DataFrame(
             {
                 "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Building", "Building", "Building","Electricity", "Dry Room","Dry Room", "Dry Room"],
-                "target": ["Manufacturing", "Electric Energy Output", "Cooling Energy Output", "Building", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Dry Room", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output"],
+                "target": ["Manufacturing", "Grid Connection", "Cooling Unit", "Building", "Cooling Unit", "Grid Connection", "Heat Pump", "Dry Room", "Cooling Unit", "Grid Connection", "Heat Pump"],
                 "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end+RLT_GWh_w_end), RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end+RuT_GWh_w_end), RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
             }
         )
         
-if energy_concept == "Kombi-Wärmepumpe":
+if energy_concept == "Hybrid Heat Pump":
         df = pd.DataFrame(
             {
                 "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Building", "Building", "Building","Electricity", "Dry Room","Dry Room", "Dry Room"],
-                "target": ["Manufacturing", "Electric Energy Output", "Cooling Energy Output", "Building", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output", "Dry Room", "Cooling Energy Output", "Electric Energy Output", "Heat Energy Output"],
+                "target": ["Manufacturing", "Grid Connection", "Cooling Unit", "Building", "Cooling Unit", "Grid Connection", "Heat Pump", "Dry Room", "Cooling Unit", "Grid Connection", "Heat Pump"],
                 "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end+RLT_GWh_w_end), RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end+RuT_GWh_w_end), RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
             }
         )
@@ -795,7 +779,7 @@ def draw_sankey(df):
         node_opts={"label_opts": {"fontsize": 7, "fontname": "monospace"}},  # Set font to monospace
         flow_opts={"curvature": 8/10},
     )
-    _, col2, _ = st.columns([1, 7, 1])
+    _, col2, _ = st.columns([0.1, 5, 0.5])
     with col2:
         diagram.draw()
         st.pyplot(plt)
@@ -815,6 +799,18 @@ sankey_placeholder = st.empty()
 #-----draw sankey plot ---------------------------------------------------
 container_sankey = st.container(border=True)
 with container_sankey:
-    st.title("Sankey-Plot")
+    sankey1, sankey2 = st.columns([7,3])
+    with sankey1:
+        st.header(":material/account_tree: Sankey-Plot")
+    with sankey2:
+        st.subheader("all values in GWh/a")
     draw_sankey(df)
-#--------------------------by tarek lichtenfeld, august 2024------------------------------------
+    
+
+end1, end2 = st.columns([7,3])
+#with end1:
+    #with st.container(border=True):
+        #st.image("Gigafactory Builder Logo.png")
+with end2:
+    st.markdown("`Created by Tarek Lichtenfeld, October 2024`")
+#--------------------------by tarek lichtenfeld, october 2024------------------------------------
