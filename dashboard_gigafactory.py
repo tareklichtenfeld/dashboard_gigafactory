@@ -93,7 +93,7 @@ with st.sidebar.container(border=True):
     production_capacity= st.sidebar.slider('**production capacity [GWh/a]**', 2, 150, 40)
 cell_format = st.sidebar.selectbox('**cell format**', ('Pouch', 'Rund', 'Prismatisch'))
 automation_degree = st.sidebar.selectbox('**degree of automation**',('low','normal','high'))
-dew_point = st.sidebar.selectbox('**dew point in dry rooms**',('-20 °C','-30 °C', '-40 °C', '-50 °C', '-60 °C'))
+dew_point = st.sidebar.selectbox('**dew point in dry rooms**',('-60 °C','-50 °C','-40 °C'))
 production_days = st.sidebar.slider('**production days per year**', 1, 365, 315)
 energy_concept = st.sidebar.selectbox('**energy concept**', ('Natural Gas Boiler', 'Cogeneration Unit', 'Heat Pump', 'Hybrid Heat Pump')) 
 st.sidebar.subheader('Developer Options')
@@ -325,64 +325,117 @@ def hum_abs(temp_val, rhum_val, pres_val):
     else:
         return(float(x))
 
-#-----FULL DP 60 2 ROTOR--------------------------------------
-def cool_full_dp60_2rotor(x, y):
-    
-    p00=131.8
-    p10=-1.526
-    p01=1.12
-    p20=0.03284
-    p11=-0.1051
-    p02=-0.1936
-    p30=0.000924
-    p21=-0.001409
-    p12=0.0371
-    p03=-0.03555
-    p40=-0.00002705
-    p31=0.0001107
-    p22=-0.0009098
-    p13=0.0005325
-    p04=0.00131
-    
-    return(p00+p10*x+p01*y+p20*x**2+p11*x*y+p02*y**2+p30*x**3+p21*x**2*y+p12*x*y**2+p03*y**3+p40*x**4+p31*x**3*y+p22*x**2*y**2+p13*x*y**3+p04*y**4)
+#-----FULL COOL DRY ROOM--------------------------------------
+if dew_point == "-60 °C":
+    def cool_full_dry_room(x, y):
+        
+        p00 =       103.3
+        p10 =       -1.09
+        p01 =      0.7667
+        p20 =     0.02341
+        p11 =    -0.07383
+        p02 =     -0.1225
+        p30 =   0.0006669
+        p21 =   -0.001092
+        p12 =     0.02655
+        p03 =    -0.02426
+        p40 =  -1.955e-05
+        p31 =   8.267e-05
+        p22 =   -0.000672
+        p13 =   0.0004604
+        p04 =   0.0007999
+        return(p00+p10*x+p01*y+p20*x**2+p11*x*y+p02*y**2+p30*x**3+p21*x**2*y+p12*x*y**2+p03*y**3+p40*x**4+p31*x**3*y+p22*x**2*y**2+p13*x*y**3+p04*y**4)
+#3-Rotor-System
 
-def heat_full_dp60_2rotor(x,y):
-    
-    p00 =       101.7
-    p10 =     0.08791
-    p01 =       3.367
-    p20 =     0.03407 
-    p11 =     -0.1347 
-    p02 =      0.6819 
-    p30 =   0.0009921  
-    p21 =   -0.002345  
-    p12 =     0.04728 
-    p03 =     -0.1927 
-    p40 =  -2.852e-05
-    p31 =   0.0001195 
-    p22 =   -0.000903 
-    p13 =  -6.901e-05
-    p04 =     0.01073 
-
-    return(p00 + p10*x + p01*y + p20*x**2 + p11*x*y + p02*y**2 + p30*x**3 + p21*x**2*y + p12*x*y**2 + p03*y**3 + p40*x**4 + p31*x**3*y + p22*x**2*y**2 + p13*x*y**3 + p04*y**4)
-
-def electr_full_dp60_2rotor():
-    return(73)
+if dew_point == "-50 °C":
+    def cool_full_dry_room(x,y): 
+        p00 =       21.58
+        p10 =     -0.3012
+        p01 =      0.2154
+        p20 =    0.006439
+        p11 =    -0.01973
+        p02 =    -0.03474
+        p30 =   0.0001893
+        p21 =  -0.0003651
+        p12 =    0.007437
+        p03 =   -0.006864
+        p40 =  -5.512e-06
+        p31 =   2.409e-05
+        p22 =   -0.000188
+        p13 =   0.0001284
+        p04 =    0.000232
+        return(p00 + p10*x + p01*y + p20*x**2 + p11*x*y + p02*y**2 + p30*x**3 +p21*x**2*y + p12*x*y**2 + p03*y**3 + p40*x**4 + p31*x**3*y + p22*x**2*y**2 + p13*x*y**3 + p04*y**4)
+#3-Rotor-System
 
 
-#-----dp60 2rotor---------------------------------------------
-def cool_full_dp40_2rotor(x, y): 
-    return ( 6.961 - 0.111 * x + 0.0695 * y + 0.002363 * x**2 - 0.007255 * x * y - 0.01146 * y**2 + 7.129e-05 * x**3 - 0.0001515 * x**2 * y + 0.002808 * x * y**2 - 0.003271 * y**3 - 2.057e-06 * x**4 + 9.04e-06 * x**3 * y - 6.803e-05 * x**2 * y**2 + 3.704e-05 * x * y**3 + 0.0001348 * y**4 )
+if dew_point == "-40 °C":
+    def cool_full_dry_room(x, y): 
+        return ( 6.961 - 0.111 * x + 0.0695 * y + 0.002363 * x**2 - 0.007255 * x * y - 0.01146 * y**2 + 7.129e-05 * x**3 - 0.0001515 * x**2 * y + 0.002808 * x * y**2 - 0.003271 * y**3 - 2.057e-06 * x**4 + 9.04e-06 * x**3 * y - 6.803e-05 * x**2 * y**2 + 3.704e-05 * x * y**3 + 0.0001348 * y**4 )
+#2-Rotor-System
 
-def heat_full_dp40_2rotor(x, y): 
-    return ( 42.23 + 0.00639*x + 0.2352*y + 0.002451*x**2 - 0.009739*x*y + 0.04956*y**2 + 7.133e-05*x**3 - 0.000167*x**2*y + 0.003407*x*y**2 - 0.01413*y**3 - 2.049e-06*x**4 + 8.536e-06*x**3*y - 6.456e-05*x**2*y**2 - 7.002e-06*x*y**3 + 0.0007891*y**4 )
+#-----FULL HEAT DRY ROOM--------------------------------------
+if dew_point == "-60 °C":
+    def heat_full_dry_room(x,y):
+        
+        p00 =        72.5
+        p10 =     0.06158
+        p01 =       2.406
+        p20 =     0.02429
+        p11 =    -0.09524
+        p02 =      0.4824
+        p30 =   0.0007075
+        p21 =   -0.001683
+        p12 =     0.03358
+        p03 =     -0.1349
+        p40 =  -2.039e-05
+        p31 =   8.665e-05
+        p22 =  -0.0006569
+        p13 =   1.204e-05
+        p04 =    0.007552
 
-def electr_full_dp40_2rotor(): 
-    return(5.258)
+        return(p00 + p10*x + p01*y + p20*x**2 + p11*x*y + p02*y**2 + p30*x**3 + p21*x**2*y + p12*x*y**2 + p03*y**3 + p40*x**4 + p31*x**3*y + p22*x**2*y**2 + p13*x*y**3 + p04*y**4)
+#3Rotor-System
+
+if dew_point == "-50 °C":
+    def heat_full_dry_room(x,y):
+        p00 =       40.67
+        p10 =     0.01687
+        p01 =      0.6638
+        p20 =    0.006678
+        p11 =    -0.02612
+        p02 =      0.1324
+        p30 =   0.0001946
+        p21 =  -0.0004645
+        p12 =    0.009223
+        p03 =    -0.03712
+        p40 =  -5.606e-06
+        p31 =   2.382e-05
+        p22 =  -0.0001805
+        p13 =   3.793e-06
+        p04 =    0.002084
+        return(p00 + p10*x + p01*y + p20*x**2 + p11*x*y + p02*y**2 + p30*x**3 + p21*x**2*y + p12*x*y**2 + p03*y**3 + p40*x**4 + p31*x**3*y + p22*x**2*y**2 + p13*x*y**3 + p04*y**4)
+
+if dew_point == "-40 °C":
+    def heat_full_dry_room(x, y): 
+        return ( 42.23 + 0.00639*x + 0.2352*y + 0.002451*x**2 - 0.009739*x*y + 0.04956*y**2 + 7.133e-05*x**3 - 0.000167*x**2*y + 0.003407*x*y**2 - 0.01413*y**3 - 2.049e-06*x**4 + 8.536e-06*x**3*y - 6.456e-05*x**2*y**2 - 7.002e-06*x*y**3 + 0.0007891*y**4 )
+# 2Rotor-System
+
+#-----FULL ELECTRIC DRY ROOM--------------------------------------
+if dew_point == "-60 °C":
+    def electr_full_dry_room():
+        return(72.5)
+
+if dew_point == "-50 °C":
+    def electr_full_dry_room():
+        return (22.58)
+
+if dew_point == "-40 °C":
+    def electr_full_dry_room():
+        return(5.26)
 
 
 #-----TEILLAST------------------------------------------------------
-def cool_partial_dp60_3rotor(x,y):
+def cool_partial_dry_room(x,y):
     return(x)
 
 
@@ -470,11 +523,11 @@ for i in range(len(t)):
     cop_data.append(cop_val)
     
     #Kälteleistung berechnen
-    cool_val = cool_full_dp40_2rotor(temp_val, hum_abs_val)
+    cool_val = cool_full_dry_room(temp_val, hum_abs_val)
     cool_data.append(cool_val)
     
     #Wärmeleistung berechnen
-    heat_val = heat_full_dp40_2rotor(temp_val, hum_abs_val)
+    heat_val = heat_full_dry_room(temp_val, hum_abs_val)
     heat_data.append(heat_val)
     
     #partial_heat_val = dryroom_heat_partial(temp_val, hum_abs_val)
@@ -494,7 +547,7 @@ for i in range(len(t)):
     brennstoff_w_end.append(brennwertkessel_wirkungsgrad(heat_val))
     
     #Strom
-    strom_electr_end.append(electr_full_dp40_2rotor())
+    strom_electr_end.append(electr_full_dry_room())
 
 
 
