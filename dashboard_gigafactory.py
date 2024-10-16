@@ -90,7 +90,7 @@ st.sidebar.pydeck_chart(map, height=250)
 #----------------------------------------------------------------------------------------------------------
 
 with st.sidebar.container(border=True):
-    production_capacity= st.sidebar.slider('**production capacity [GWh/a]**', 2, 150, 40,help="Determines how much battery capacity will be produced in your factory per year.")
+    production_capacity= st.sidebar.slider('**production capacity [GWh/a]**', 5, 150, 40,help="Determines how much battery capacity will be produced in your factory per year.")
 cell_format = st.sidebar.selectbox('**cell format**', ('Pouch', 'Cylindrical', 'Prismatic'))
 automation_degree = st.sidebar.selectbox('**degree of automation**',('low','normal','high'))
 dew_point = st.sidebar.selectbox('**dew point in dry rooms**',('-60 °C','-50 °C','-40 °C'))
