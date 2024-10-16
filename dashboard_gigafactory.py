@@ -43,7 +43,7 @@ with st.sidebar.expander('**:material/info: What do the buttons mean?**'):
     st.markdown("**Weather Reference Year:** Experimental feature that changes the reference year the Gigafactory Builder uses to calculate the energy demand of the process steps depending on outside temperature.")
 
 #-----GET GEOPY LOCATION COORDINATES-----------------------------------------------------------
-location_geopy= st.sidebar.text_input("**:material/location_on: location**","Münster")
+location_geopy= st.sidebar.text_input("**:material/location_on: location**","Münster",help="Sets the location of your gigafactory. The climate of the location can drastically change the energy demand of the factory.")
 
 from geopy.geocoders import Nominatim
 geolocator = Nominatim(user_agent="user_agent")
@@ -90,8 +90,8 @@ st.sidebar.pydeck_chart(map, height=250)
 #----------------------------------------------------------------------------------------------------------
 
 with st.sidebar.container(border=True):
-    production_capacity= st.sidebar.slider('**production capacity [GWh/a]**', 2, 150, 40)
-cell_format = st.sidebar.selectbox('**cell format**', ('Pouch', 'Rund', 'Prismatisch'))
+    production_capacity= st.sidebar.slider('**production capacity [GWh/a]**', 2, 150, 40,help="Determines how much battery capacity will be produced in your factory per year.")
+cell_format = st.sidebar.selectbox('**cell format**', ('Pouch', 'Cylindrical', 'Prismatic'))
 automation_degree = st.sidebar.selectbox('**degree of automation**',('low','normal','high'))
 dew_point = st.sidebar.selectbox('**dew point in dry rooms**',('-60 °C','-50 °C','-40 °C'))
 production_days = st.sidebar.slider('**production days per year**', 1, 365, 315)
@@ -272,8 +272,8 @@ def MA_pro_GWh(x):
 def MA_in_RuT(x, cell_format):
     factors = {
         "Pouch": 0.83,
-        "Rund": 1.0,
-        "Prismatisch": 1.225
+        "Cylindrical": 1.0,
+        "Prismatic": 1.225
     }
     return x * 27 * factors.get(cell_format, 1.0)
 
@@ -295,9 +295,9 @@ def Prozess_Stromnutzlast(x):
     day_factor=365/315
     if cell_format == 'Pouch':
         return 25.86493*x*day_factor
-    if cell_format == 'Rund':
+    if cell_format == 'Cylindrical':
         return 26.59484*x*day_factor
-    if cell_format == 'Prismatisch':
+    if cell_format == 'Prismatic':
         return 29.58601*x*day_factor
     
 #-----Kälte-Nutzlast--------------------------------------------
@@ -305,9 +305,9 @@ def Prozess_Kaeltenutzlast(x):
     day_factor=365/315
     if cell_format == 'Pouch':
         return 8.14149*x*day_factor
-    if cell_format == 'Rund':
+    if cell_format == 'Cylindrical':
         return 9.60784*x*day_factor
-    if cell_format == 'Prismatisch':
+    if cell_format == 'Prismatic':
         return 13.00309*x*day_factor
     
 
@@ -478,11 +478,11 @@ def brennwertkessel_wirkungsgrad(heat):
 
 #-----Konzept 2 - BHKW--------------------------------------------------
 def bhkw_w_wirkungsgrad(x):
-    n = 0.9
+    n = 0.675
     return x/n
 
 def bhkw_s_wirkungsgrad(x):
-    n = 0.05
+    n = 0.225
     return x*n
 
 #-----Konzept 3 - Heat Pump--------------------------------------------
@@ -683,7 +683,7 @@ def co2_electric(x):
 
 
 if energy_concept=="Cogeneration Unit":
-    natural_gas_usage=gesamtfabrik_w_end+bhkw_s_wirkungsgrad(RLT_GWh_s_nutz)
+    natural_gas_usage=gesamtfabrik_w_end+bhkw_s_wirkungsgrad(gesamtfabrik_s_nutz)
 elif energy_concept=="Natural Gas Boiler":
     natural_gas_usage=gesamtfabrik_w_end
 else:
@@ -695,7 +695,7 @@ mio_cubic_meters_daily = mio_cubic_meters/365
 
 
 if energy_concept=="Cogeneration Unit":
-    electricity_usage=gesamtfabrik_ges_end-(gesamtfabrik_w_end+bhkw_s_wirkungsgrad(RLT_GWh_s_nutz))
+    electricity_usage=gesamtfabrik_ges_end-natural_gas_usage
 elif energy_concept=="Natural Gas Boiler":
     electricity_usage=gesamtfabrik_ges_end-gesamtfabrik_w_end
 else:
@@ -711,9 +711,9 @@ natural_gas_emissions_kilotons=(co2_electric(electricity_usage)+co2_natual_gas(n
 #-----Differenzen------------------------------------------
 if cell_format == "Pouch":
     avg_energiefaktor=45
-if cell_format == "Rund":
+if cell_format == "Cylindrical":
     avg_energiefaktor=50
-if cell_format == "Prismatisch":
+if cell_format == "Prismatic":
     avg_energiefaktor=55
 dif_energiefaktor=(1-(energiefaktor/avg_energiefaktor))*100
 
@@ -731,14 +731,23 @@ with container_a:
 #-----Row B-----------------------------------------------------------------
 container_b = st.container(border=True)
 with container_b:
-    st.subheader(":material/energy_program_time_used: Energy Usage by type")
+    st.subheader(":material/energy_program_time_used: Overall Energy Usage by type")
     b1, b2, b3, b4 = st.columns(4)
     b1.metric(":material/heat: Heat energy output [GWh/a]",round(gesamtfabrik_w_nutz,2))
     b2.metric(":material/mode_cool: Cooling energy output [GWh/a]",round(gesamtfabrik_k_nutz,2))
     b3.metric(":material/bolt: Electrical energy output [GWh/a]",round(gesamtfabrik_s_nutz,2))
     b4.metric("Total energy output [GWh/a]", f"{round(gesamtfabrik_ges_nutz,2)}")
 
-
+#------dry room extras----------------------------------------------------
+container_b = st.container(border=True)
+with container_b:
+    st.subheader(":material/cool_to_dry: Dry Room Energy Usage")
+    b1, b2, b3, b4 = st.columns(4)
+    b1.metric(":material/heat: Heat energy usage [GWh/a]",round(RuT_GWh_w_nutz,2),help="Contradictory to what one would expect, the heat usage is actually higher in warm locations.")
+    b2.metric(":material/mode_cool: Cooling energy usage [GWh/a]",round(RuT_GWh_k_nutz,2))
+    b3.metric(":material/bolt: Electrical energy usage [GWh/a]",round(RuT_GWh_s_nutz,2))
+    b4.metric("Total energy usage [GWh/a]", f"{round((RuT_GWh_w_nutz+RuT_GWh_k_nutz+RuT_GWh_s_nutz),2)}")
+    
 #-----row b2---------------------------------------------------------------
 container_c = st.container(border=True)
 with container_c:
@@ -796,9 +805,9 @@ if energy_concept == "Natural Gas Boiler":
 if energy_concept == "Cogeneration Unit":
         df = pd.DataFrame(
             {
-                "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Natural Gas", "Building", "Building", "Building","Electricity", "Natural Gas", "Dry Room","Dry Room", "Dry Room"],
-                "target": ["Manufacturing", "Electric Energy Output", "Cooling Unit", "Building", "Building", "Cooling Unit", "Electric Energy Output", "Heat Energy Output", "Dry Room", "Dry Room", "Cooling Unit", "Electric Energy Output", "Heat Energy Output"],
-                "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end), RLT_GWh_w_end, RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end), RuT_GWh_w_end, RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
+                "source": ["Electricity", "Electricity", "Natural Gas","Cogeneration Unit", "Cogeneration Unit", "Grid Connection", "Grid Connection","Grid Connection", "Cooling Unit", "Cooling Unit", "Cooling Unit", "Boiler", "Boiler" ],
+                "target": ["Grid Connection", "Cooling Unit", "Cogeneration Unit", "Grid Connection", "Boiler", "Manufacturing", "Dry Room", "Building", "Manufacturing", "Dry Room", "Building", "Dry Room", "Building"],
+                "value": [gesamtfabrik_s_end, gesamtfabrik_k_end, natural_gas_usage, (bhkw_s_wirkungsgrad(gesamtfabrik_s_nutz)), gesamtfabrik_w_end, PRO_GWh_s_nutz, RuT_GWh_s_nutz, RLT_GWh_s_nutz, PRO_GWh_k_nutz, RuT_GWh_k_nutz, RLT_GWh_k_nutz, RuT_GWh_w_nutz, RLT_GWh_w_nutz],
             }
         )
 if energy_concept == "Heat Pump":
@@ -814,7 +823,7 @@ if energy_concept == "Hybrid Heat Pump":
         df = pd.DataFrame(
             {
                 "source": ["Electricity", "Manufacturing", "Manufacturing","Electricity", "Building", "Building", "Building","Electricity", "Dry Room","Dry Room", "Dry Room"],
-                "target": ["Manufacturing", "Grid Connection", "Cooling Unit", "Building", "Cooling Unit", "Grid Connection", "Heat Pump", "Dry Room", "Cooling Unit", "Grid Connection", "Heat Pump"],
+                "target": ["Manufacturing", "Grid Connection", "Cooling Unit", "Building", "Cooling Unit", "Grid Connection", "Hybrid Heat Pump", "Dry Room", "Cooling Unit", "Grid Connection", "Hybrid Heat Pump"],
                 "value": [(PRO_GWh_s_end+PRO_GWh_k_end), PRO_GWh_s_nutz, PRO_GWh_k_nutz, (RLT_GWh_k_end+RLT_GWh_s_end+RLT_GWh_w_end), RLT_GWh_k_nutz, RLT_GWh_s_nutz, RLT_GWh_w_nutz, (RuT_GWh_k_end+RuT_GWh_s_end+RuT_GWh_w_end), RuT_GWh_k_nutz, RuT_GWh_s_nutz, RuT_GWh_w_nutz],
             }
         )
