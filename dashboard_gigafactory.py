@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import io
 import pydeck as pdk
 from geopy.geocoders import Nominatim
+from sqlalchemy import create_engine, select
 
 # Page setting
 st.set_page_config(page_title="Gigafactory-Skalierungstool",
@@ -43,15 +44,17 @@ with st.sidebar.expander('**:material/info: What do the buttons mean?**'):
     st.markdown("**Weather Reference Year:** Experimental feature that changes the reference year the Gigafactory Builder uses to calculate the energy demand of the process steps depending on outside temperature.")
 
 #-----GET GEOPY LOCATION COORDINATES-----------------------------------------------------------
-location_geopy= st.sidebar.text_input("**:material/location_on: location**","Münster",help="Sets the location of your gigafactory. The climate of the location can drastically change the energy demand of the factory.")
+location_geopy= st.sidebar.text_input("**:material/location_on: location**","Münster", help="Sets the location of your gigafactory. The climate of the location can drastically change the energy demand of the factory.")
 
-from geopy.geocoders import Nominatim
 geolocator = Nominatim(user_agent="user_agent")
 location = geolocator.geocode(f"{location_geopy}")
 st.sidebar.write(location.address)
 
 lat = location.latitude
 lon = location.longitude
+
+
+#-----COUNTRY CODE---------------------------------
 
 
 #-----Display the map----------------------------------------------------------------------
@@ -288,7 +291,6 @@ def MA_nach_Automatisierungsgrad(x2):
     else:
         return x2
 
-
 #-----PROZESSENERGIE--------------------------------------------------------
 #-----Elektrische Last--------------------------------------------
 def Prozess_Stromnutzlast(x):
@@ -309,7 +311,7 @@ def Prozess_Kaeltenutzlast(x):
         return 9.60784*x*day_factor
     if cell_format == 'Prismatic':
         return 13.00309*x*day_factor
-    
+
 
 #-----REIN-UND TROCKENRAUM--------------------------------------------------
 #-----absolute Feuchte----------------------------------------
@@ -327,7 +329,7 @@ def hum_abs(temp_val, rhum_val, pres_val):
 
 #-----FULL COOL DRY ROOM--------------------------------------
 if dew_point == "-60 °C":
-    def cool_full_dry_room(x, y):
+    def heat_full_dry_room(x, y):
         
         p00 =       103.3
         p10 =       -1.09
@@ -345,10 +347,10 @@ if dew_point == "-60 °C":
         p13 =   0.0004604
         p04 =   0.0007999
         return(p00+p10*x+p01*y+p20*x**2+p11*x*y+p02*y**2+p30*x**3+p21*x**2*y+p12*x*y**2+p03*y**3+p40*x**4+p31*x**3*y+p22*x**2*y**2+p13*x*y**3+p04*y**4)
-#3-Rotor-System
 
+#3-Rotor-System
 if dew_point == "-50 °C":
-    def cool_full_dry_room(x,y): 
+    def heat_full_dry_room(x,y): 
         p00 =       21.58
         p10 =     -0.3012
         p01 =      0.2154
@@ -369,13 +371,13 @@ if dew_point == "-50 °C":
 
 
 if dew_point == "-40 °C":
-    def cool_full_dry_room(x, y): 
+    def heat_full_dry_room(x, y): 
         return ( 6.961 - 0.111 * x + 0.0695 * y + 0.002363 * x**2 - 0.007255 * x * y - 0.01146 * y**2 + 7.129e-05 * x**3 - 0.0001515 * x**2 * y + 0.002808 * x * y**2 - 0.003271 * y**3 - 2.057e-06 * x**4 + 9.04e-06 * x**3 * y - 6.803e-05 * x**2 * y**2 + 3.704e-05 * x * y**3 + 0.0001348 * y**4 )
 #2-Rotor-System
 
 #-----FULL HEAT DRY ROOM--------------------------------------
 if dew_point == "-60 °C":
-    def heat_full_dry_room(x,y):
+    def cool_full_dry_room(x,y):
         
         p00 =        72.5
         p10 =     0.06158
@@ -397,7 +399,7 @@ if dew_point == "-60 °C":
 #3Rotor-System
 
 if dew_point == "-50 °C":
-    def heat_full_dry_room(x,y):
+    def cool_full_dry_room(x,y):
         p00 =       40.67
         p10 =     0.01687
         p01 =      0.6638
@@ -416,7 +418,7 @@ if dew_point == "-50 °C":
         return(p00 + p10*x + p01*y + p20*x**2 + p11*x*y + p02*y**2 + p30*x**3 + p21*x**2*y + p12*x*y**2 + p03*y**3 + p40*x**4 + p31*x**3*y + p22*x**2*y**2 + p13*x*y**3 + p04*y**4)
 
 if dew_point == "-40 °C":
-    def heat_full_dry_room(x, y): 
+    def cool_full_dry_room(x, y): 
         return ( 42.23 + 0.00639*x + 0.2352*y + 0.002451*x**2 - 0.009739*x*y + 0.04956*y**2 + 7.133e-05*x**3 - 0.000167*x**2*y + 0.003407*x*y**2 - 0.01413*y**3 - 2.049e-06*x**4 + 8.536e-06*x**3*y - 6.456e-05*x**2*y**2 - 7.002e-06*x*y**3 + 0.0007891*y**4 )
 # 2Rotor-System
 
@@ -472,7 +474,7 @@ def strom_eert(e, kaelte):
 
 #-----Konzept 1 - Brennwertkessel---------------------------------------
 def brennwertkessel_wirkungsgrad(heat):
-    n = 0.95
+    n = 0.965
     end_waermelast = heat/n
     return(end_waermelast)
 
@@ -755,7 +757,7 @@ with container_c:
     b5, b6, b7 = st.columns(3)
     b5.metric(":material/nature: CO2-emissions [kilotons/year]",round((natural_gas_emissions_kilotons),1))
     b6.metric("Total energy input [GWh/a]", round(gesamtfabrik_ges_end,2))
-    b7.metric(":material/power: Total electricity input [GWh/a]",round((gesamtfabrik_ges_end-natural_gas_usage),2))
+    b7.metric(":material/groups: People in Dry Rooms",(MA_in_RuT(production_capacity, cell_format)))
 
 #leave some space
 
