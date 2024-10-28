@@ -756,7 +756,7 @@ with container_c:
     b5, b6, b7 = st.columns(3)
     b5.metric(":material/nature: CO2-emissions [kilotons/year]",round((natural_gas_emissions_kilotons),1))
     b6.metric("Total energy input [GWh/a]", round(gesamtfabrik_ges_end,2))
-    b7.metric(":material/groups: People in Dry Rooms",(MA_in_RuT(production_capacity, cell_format)))
+    b7.metric(":material/groups: People in Dry Rooms",MA_nach_Automatisierungsgrad((MA_in_RuT(production_capacity, cell_format))))
 
 #leave some space
 
