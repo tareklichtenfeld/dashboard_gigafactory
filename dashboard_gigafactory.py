@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 import io
 import pydeck as pdk
 from geopy.geocoders import Nominatim
-from sqlalchemy import create_engine, select
 
 # Page setting
 st.set_page_config(page_title="Gigafactory-Skalierungstool",
