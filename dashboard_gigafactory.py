@@ -92,7 +92,7 @@ st.sidebar.pydeck_chart(map, height=250)
 #----------------------------------------------------------------------------------------------------------
 
 with st.sidebar.container(border=True):
-    production_capacity= st.sidebar.slider('**production capacity [GWh/a]**', 5, 150, 40,help="Determines how much battery capacity will be produced in your factory per year.")
+    production_capacity= st.sidebar.slider('**production capacity [GWh/a]**', 5, 150, 40,help="Determines how much battery capacity will be produced in your factory per year. This value assumes 315 production days. If you change the production days, you will see the actual value change in the blue box. :D")
 cell_format = st.sidebar.selectbox('**cell format**', ('Pouch', 'Cylindrical', 'Prismatic'))
 automation_degree = st.sidebar.selectbox('**degree of automation**',('low','normal','high'))
 dew_point = st.sidebar.selectbox('**dew point in dry rooms**',('-60 °C','-50 °C','-40 °C'))
@@ -107,6 +107,11 @@ st.sidebar.markdown('''
 Created by Tarek Lichtenfeld :)
 ''')
 
+st.sidebar.link_button("Fraunhofer FFB","https://www.ffb.fraunhofer.de/",use_container_width=True)
+st.sidebar.markdown('<a href="mailto:tarek.folker.bo.lichtenfeld@ffb.fraunhofer.de">Contact me :D</a>', unsafe_allow_html=True)
+
+#----input for displayed production capacity-----------------------------
+production_day_factor_315 = production_days/315
 #-----HEADER------------------------------------------------------------------
 header1, header2 = st.columns([2,5])
 with header1:
@@ -130,7 +135,7 @@ with header2:
         st.subheader(":material/factory: Your Factory")
         battery1, battery2, battery3 = st.columns(3)
         with battery1:
-            st.metric(label=":material/conveyor_belt: Production Capacity [GWh/a]", value=production_capacity)
+            st.metric(label=":material/conveyor_belt: Actual Production Capacity [GWh/a]", value=round((production_capacity/production_day_factor_315),2), help="As you maybe haven't noticed yet, the production capacity you set in the sidebar actually refers to 315 production days. If you set your number lower or higher than that, this metric displays your actual production capacity that is used to calculate the values below. :)")
         with battery2:
             st.metric(label=":material/battery_unknown: Cell Format", value=cell_format)
         with battery3:
@@ -672,7 +677,7 @@ gesamtfabrik_s_end = (RuT_GWh_s_end+PRO_GWh_s_end+RLT_GWh_s_end)
 gesamtfabrik_ges_end = gesamtfabrik_k_end + gesamtfabrik_w_end + gesamtfabrik_s_end
 
 #-----Gesamtfabrik Daten & Werte----------------------------------------------
-energiefaktor = gesamtfabrik_ges_end/(production_capacity*production_day_factor)
+energiefaktor = gesamtfabrik_ges_end/(production_capacity*production_day_factor_315)
 
 
 #-----Emissionen--------------------------------------------------------------------------------
@@ -747,10 +752,10 @@ container_b = st.container(border=True)
 with container_b:
     st.subheader(":material/energy_program_time_used: Useful Energy Factors by type ")
     b1, b2, b3, b4 = st.columns(4)
-    b1.metric(":material/heat: Heat energy factor [GWh/a]",round((gesamtfabrik_w_nutz/(production_capacity*production_day_factor)),2))
-    b2.metric(":material/mode_cool: Cooling energy factor [GWh/a]",round((gesamtfabrik_k_nutz/(production_capacity*production_day_factor)),2))
-    b3.metric(":material/bolt: Electrical energy factor [GWh/a]",round((gesamtfabrik_s_nutz/(production_capacity*production_day_factor)),2))
-    b4.metric(":material/energy_program_time_used: Total Useful Energy Factor [GWh/a]", f"{round((gesamtfabrik_ges_nutz/(production_capacity*production_day_factor)),2)}")
+    b1.metric(":material/heat: Heat energy factor [kWh/kWhcell]",round((gesamtfabrik_w_nutz/(production_capacity*production_day_factor_315)),2))
+    b2.metric(":material/mode_cool: Cooling energy factor [kWh/kWhcell]",round((gesamtfabrik_k_nutz/(production_capacity*production_day_factor_315)),2))
+    b3.metric(":material/bolt: Electrical energy factor [kWh/kWhcell]",round((gesamtfabrik_s_nutz/(production_capacity*production_day_factor_315)),2))
+    b4.metric(":material/energy_program_time_used: Total Useful Energy Factor [kWh/kWhcell]", f"{round((gesamtfabrik_ges_nutz/(production_capacity*production_day_factor_315)),2)}")
 
 #------dry room extras----------------------------------------------------
 container_b = st.container(border=True)
@@ -843,7 +848,7 @@ container_sankey = st.container(border=True)
 with container_sankey:
     sankey1, sankey2 = st.columns([7,3])
     with sankey1:
-        st.header(":material/account_tree: Sankey-Plot")
+        st.header(":material/account_tree: Sankey-Plot", help="This Sankey plot is still work in progress, only the plot shown when choosing the Natural Gas Boiler as your energy concept is done. The others still have some improvements coming. :D")
     with sankey2:
         st.subheader("all values in GWh/a")
     draw_sankey(df)
