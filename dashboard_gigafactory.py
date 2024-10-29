@@ -742,6 +742,16 @@ with container_b:
     b3.metric(":material/bolt: Electrical energy output [GWh/a]",round(gesamtfabrik_s_nutz,2))
     b4.metric("Total energy output [GWh/a]", f"{round(gesamtfabrik_ges_nutz,2)}")
 
+#-----Row B-----------------------------------------------------------------
+container_b = st.container(border=True)
+with container_b:
+    st.subheader(":material/energy_program_time_used: Useful Energy Factors by type ")
+    b1, b2, b3, b4 = st.columns(4)
+    b1.metric(":material/heat: Heat energy factor [GWh/a]",round((gesamtfabrik_w_nutz/(production_capacity*production_day_factor)),2))
+    b2.metric(":material/mode_cool: Cooling energy factor [GWh/a]",round((gesamtfabrik_k_nutz/(production_capacity*production_day_factor)),2))
+    b3.metric(":material/bolt: Electrical energy factor [GWh/a]",round((gesamtfabrik_s_nutz/(production_capacity*production_day_factor)),2))
+    b4.metric(":material/energy_program_time_used: Total Useful Energy Factor [GWh/a]", f"{round((gesamtfabrik_ges_nutz/(production_capacity*production_day_factor)),2)}")
+
 #------dry room extras----------------------------------------------------
 container_b = st.container(border=True)
 with container_b:
