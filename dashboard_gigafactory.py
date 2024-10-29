@@ -326,7 +326,7 @@ def hum_abs(temp_val, rhum_val, pres_val):
     else:
         return(float(x))
 
-#-----FULL COOL DRY ROOM--------------------------------------
+#-----FULL HEAT DRY ROOM--------------------------------------
 if dew_point == "-60 °C":
     def heat_full_dry_room(x, y):
         
@@ -374,7 +374,7 @@ if dew_point == "-40 °C":
         return ( 6.961 - 0.111 * x + 0.0695 * y + 0.002363 * x**2 - 0.007255 * x * y - 0.01146 * y**2 + 7.129e-05 * x**3 - 0.0001515 * x**2 * y + 0.002808 * x * y**2 - 0.003271 * y**3 - 2.057e-06 * x**4 + 9.04e-06 * x**3 * y - 6.803e-05 * x**2 * y**2 + 3.704e-05 * x * y**3 + 0.0001348 * y**4 )
 #2-Rotor-System
 
-#-----FULL HEAT DRY ROOM--------------------------------------
+#-----FULL COOL DRY ROOM--------------------------------------
 if dew_point == "-60 °C":
     def cool_full_dry_room(x,y):
         
@@ -479,13 +479,16 @@ def brennwertkessel_wirkungsgrad(heat):
 
 #-----Konzept 2 - BHKW--------------------------------------------------
 def bhkw_w_wirkungsgrad(x):
-    n = 0.675
+    n = 0.55
     return x/n
 
 def bhkw_s_wirkungsgrad(x):
-    n = 0.225
+    n = 0.35
     return x*n
 
+def bhkw_ges_wirkungsgrad(x):
+    n=0.9
+    return x/n
 #-----Konzept 3 - Heat Pump--------------------------------------------
 def strom_cop(n_c, waerme):
     end_waermeleistung = waerme/n_c
@@ -684,7 +687,7 @@ def co2_electric(x):
 
 
 if energy_concept=="Cogeneration Unit":
-    natural_gas_usage=gesamtfabrik_w_end+bhkw_s_wirkungsgrad(gesamtfabrik_s_nutz)
+    natural_gas_usage=bhkw_ges_wirkungsgrad(gesamtfabrik_w_end+bhkw_s_wirkungsgrad(gesamtfabrik_s_nutz))
 elif energy_concept=="Natural Gas Boiler":
     natural_gas_usage=gesamtfabrik_w_end
 else:
@@ -756,41 +759,7 @@ with container_c:
     b5, b6, b7 = st.columns(3)
     b5.metric(":material/nature: CO2-emissions [kilotons/year]",round((natural_gas_emissions_kilotons),1))
     b6.metric("Total energy input [GWh/a]", round(gesamtfabrik_ges_end,2))
-    b7.metric(":material/groups: People in Dry Rooms",MA_nach_Automatisierungsgrad((MA_in_RuT(production_capacity, cell_format))))
-
-#leave some space
-
-
-#-----andere Charts, erstmal gestrichen.-----------------------------------------------------
-#st.title("Graphs & Charts")
-#ch1,ch2,ch3 = st.columns([6,1,2])
-#with ch1:
-    #source_nutz = pd.DataFrame({"form of energy": ["heat energy", "cooling energy", "electrical energy"], "value": [gesamtfabrik_w_nutz,gesamtfabrik_k_nutz,gesamtfabrik_s_nutz]})
-
-    #source_end = pd.DataFrame({"form of energy": ["electricity", "natural gas"], "value": [(gesamtfabrik_ges_end-natural_gas_usage),natural_gas_usage]})
-
-    #chart_nutz = alt.Chart(source_nutz).mark_arc(innerRadius=50).encode(
-            #theta=alt.Theta(field="value", type="quantitative"),
-            #color=alt.Color(field="form of energy", type="nominal"),
-            #)
-    #chart_end = alt.Chart(source_end).mark_arc(innerRadius=50).encode(
-            #theta=alt.Theta(field="value", type="quantitative"),
-            #color=alt.Color(field="form of energy", type="nominal"),
-            #)
-
-    #tab1, tab2 = st.tabs(["Energy Output", "Energy Input"])
-
-    #with tab1:
-            #st.altair_chart(chart_nutz, theme="streamlit", use_container_width=True)
-    #with tab2:
-            #st.altair_chart(chart_end, theme="streamlit", use_container_width=True)
-
-#with ch3:
-    #st.write("#")
-    #st.write("These plots are subject to change and i am still looking for the ideal way to visualize the data :D so please come forward and give me ideas on how to plot the data in the most intuitive way")
-
-
-
+    b7.metric(":material/groups: People in Dry Rooms",int(MA_nach_Automatisierungsgrad((MA_in_RuT(production_capacity, cell_format)))))
 
 
 #---------Row D - SANKEY DIAGRAM-----------------------------------------------------
