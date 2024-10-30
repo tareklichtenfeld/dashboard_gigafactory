@@ -735,7 +735,7 @@ with container_a:
     a1.metric(":material/energy_program_time_used: energy factor [kWh/kWhcell]", f"{round(energiefaktor,2)}", delta=f"{round(dif_energiefaktor, 1)} %" )
     a2.metric(":material/bolt: Estimated Connection power",f"{round(((((gesamtfabrik_ges_end-natural_gas_usage)/8760)*1.2)*10**3),2)} MW")
     a3.metric(":material/power: Electricity input [GWh/a]",round((gesamtfabrik_ges_end-natural_gas_usage),2))
-    a4.metric(":material/water_drop: Natural Gas input [mio. m³/a]", round(mio_cubic_meters,2) )
+    a4.metric(":material/water_drop: Natural Gas usage [GWh/a]", round(natural_gas_usage,2) )
 
 #-----Row B-----------------------------------------------------------------
 container_b = st.container(border=True)
