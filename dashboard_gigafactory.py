@@ -1,14 +1,10 @@
 import streamlit as st
 from streamlit_extras.stylable_container import stylable_container
 import pandas as pd
-import altair as alt
 import numpy as np
-import plost
-from PIL import Image
 from statistics import mean
 from datetime import datetime
 from meteostat import Hourly, Stations
-from streamlit_modal import Modal
 from sankeyflow import Sankey
 import matplotlib.pyplot as plt
 import io
@@ -100,6 +96,7 @@ production_days = st.sidebar.slider('**production days per year**', 1, 365, 315)
 energy_concept = st.sidebar.selectbox('**energy concept**', ('Natural Gas Boiler', 'Cogeneration Unit', 'Heat Pump', 'Hybrid Heat Pump')) 
 st.sidebar.subheader('Developer Options')
 year = st.sidebar.slider('**weather reference year**', 2003, 2023, 2023)
+electricity_price=st.sidebar.slider('Electricity Price in €/kWh',0.05,0.50,0.15)
 
 
 st.sidebar.markdown('''
@@ -473,7 +470,7 @@ def eert(K):
 #-----Kälteerzeugung KKM
 def strom_eert(e, kaelte):
     cop_kkm = 6.1
-    end_kaelteleistung = kaelte/cop_kkm + kaelte/e
+    end_kaelteleistung = kaelte/cop_kkm + (kaelte*1.3)/e
     return(end_kaelteleistung)
 
 #-----Konzept 1 - Brennwertkessel---------------------------------------
@@ -735,7 +732,7 @@ with container_a:
     a1.metric(":material/energy_program_time_used: energy factor [kWh/kWhcell]", f"{round(energiefaktor,2)}", delta=f"{round(dif_energiefaktor, 1)} %" )
     a2.metric(":material/bolt: Estimated Connection power",f"{round(((((gesamtfabrik_ges_end-natural_gas_usage)/8760)*1.2)*10**3),2)} MW")
     a3.metric(":material/power: Electricity input [GWh/a]",round((gesamtfabrik_ges_end-natural_gas_usage),2))
-    a4.metric(":material/water_drop: Natural Gas usage [GWh/a]", round(natural_gas_usage,2) )
+    a4.metric(":material/water_drop: Natural Gas input [mio. m³/a]", round(mio_cubic_meters,2) )
 
 #-----Row B-----------------------------------------------------------------
 container_b = st.container(border=True)
@@ -773,7 +770,7 @@ with container_c:
     st.subheader(":material/analytics: Additional Information")
     b5, b6, b7 = st.columns(3)
     b5.metric(":material/nature: CO2-emissions [kilotons/year]",round((natural_gas_emissions_kilotons),1))
-    b6.metric("Total energy input [GWh/a]", round(gesamtfabrik_ges_end,2))
+    b6.metric("Total Electricity Costs [Mio.€/GWh]", round(((((electricity_usage*10**6)*electricity_price)/(production_capacity*production_day_factor_315))/10**6),2))  
     b7.metric(":material/groups: People in Dry Rooms",int(MA_nach_Automatisierungsgrad((MA_in_RuT(production_capacity, cell_format)))))
 
 
