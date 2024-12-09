@@ -135,7 +135,7 @@ with header_container:
                     }
                     """
             ):
-            st.subheader(":material/factory: Your Factory")
+            st.subheader(":material/battery_charging_full: Your Factory")
             
             battery5, battery6 = st.columns(2)
             with battery5:
