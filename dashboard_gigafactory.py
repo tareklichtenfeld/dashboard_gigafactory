@@ -139,16 +139,16 @@ with header_container:
             
             battery5, battery6 = st.columns(2)
             with battery5:
-                st.metric(label=":material/conveyor_belt: Location", value=f"{location.address}", help="As you maybe haven't noticed yet, the production capacity you set in the sidebar actually refers to 315 production days. If you set your number lower or higher than that, this metric displays your actual production capacity that is used to calculate the values below. :)")
+                st.metric(label=":material/conveyor_belt: Location", value=f"{location.address}", help="The location of you factory based on your input.")
             with battery6:
-                st.metric(label=":material/battery_unknown: Cell Format", value=cell_format)
+                st.metric(label=":material/battery_unknown: Cell Format", value=cell_format, help="The cell format you chose.")
             battery1, battery2, battery3 = st.columns(3)
             with battery1:
-                st.metric(label=":material/conveyor_belt: Actual Production Capacity [GWh/a]", value=round((production_capacity*production_day_factor_315),2), help="As you maybe haven't noticed yet, the production capacity you set in the sidebar actually refers to 315 production days. If you set your number lower or higher than that, this metric displays your actual production capacity that is used to calculate the values below. :)")
+                st.metric(label=":material/conveyor_belt: Actual Production Capacity [GWh/a]", value=round((production_capacity*production_day_factor_315),2), help="The actual annual production capacity in GWh/a. As you might have noticed, the production capacity you set in the sidebar refers to 315 production days. If you set your number lower or higher than that, this metric displays your actual production capacity that is used to calculate the values below.")
             with battery2:
-                st.metric(label=":material/calendar_month: Production Days", value=production_days)
+                st.metric(label=":material/calendar_month: Production Days", value=production_days, help="The number of annual production days you selected.")
             with battery3:
-                st.metric(label=":material/dew_point: Dew Point Temperature [°C]", value=dew_point)
+                st.metric(label=":material/dew_point: Dew Point Temperature [°C]", value=dew_point, help="The dew point temperature in °C you set.")
 
 #-----popover---------------------------------------------------
 
@@ -750,7 +750,7 @@ container_a = st.container(border=True)
 with container_a:
     st.subheader(":material/key: Key Values")
     a1, a2, a3, a4= st.columns(4)
-    a1.metric(":material/energy_program_time_used: energy factor [kWh/kWhcell]", f"{round(energiefaktor,2)}", delta=f"{round(dif_energiefaktor, 1)} %" )
+    a1.metric(":material/energy_program_time_used: Energy Factor [kWh/kWhcell]", f"{round(energiefaktor,2)}", delta=f"{round(dif_energiefaktor, 1)} %" )
     a2.metric(":material/bolt: Estimated Connection power",f"{round(((((gesamtfabrik_ges_end-natural_gas_usage)/8760)*1.2)*10**3),2)} MW")
     a3.metric(":material/power: Electricity input [GWh/a]",round((gesamtfabrik_ges_end-natural_gas_usage),2))
     a4.metric(":material/water_drop: Natural Gas input [mio. m³/a]", round(mio_cubic_meters,2) )
