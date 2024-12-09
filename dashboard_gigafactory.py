@@ -11,6 +11,7 @@ import io
 import pydeck as pdk
 from geopy.geocoders import Nominatim
 from io import BytesIO
+from xlsxwriter import Workbook
 
 # Page setting
 st.set_page_config(page_title="Gigafactory-Skalierungstool",

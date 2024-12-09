@@ -7,3 +7,4 @@ pydeck==0.9.1
 sankeyflow==0.4.1
 streamlit==1.40.2
 streamlit_extras==0.5.0
+XlsxWriter==3.2.0
