@@ -11,7 +11,7 @@ import io
 import pydeck as pdk
 from geopy.geocoders import Nominatim
 from io import BytesIO
-from xlsxwriter import Workbook
+from pyxlsb import open_workbook as open_xlsb
 
 # Page setting
 st.set_page_config(page_title="Gigafactory-Skalierungstool",
@@ -804,8 +804,7 @@ def to_excel(df):
     df.to_excel(writer, index=False, sheet_name='Sheet1')
     workbook = writer.book
     worksheet = writer.sheets['Sheet1']
-    # Optionale Formatierung (hier als Beispiel für Zahlenformatierung)
-    format1 = workbook.add_format({'num_format': '0.00'})
+    format1 = workbook.add_format({'num_format': '0.00'}) 
     worksheet.set_column('A:A', None, format1)  
     writer.save()
     processed_data = output.getvalue()
@@ -828,14 +827,15 @@ data_excel = {
   "": ["", "", "", "", "", "", "", "", ""]
 }
 
+df_xlsx = to_excel(data_excel)
+st.title("Excel-Export in Streamlit")
+st.download_button(label='📥 Download Current Results',
+                                data=df_xlsx ,
+                                file_name= 'df_test.xlsx')
 df_excel = pd.DataFrame(data_excel)
 
 # Streamlit-App
-st.title("Excel-Export in Streamlit")
-st.write(df_excel)  # DataFrame anzeigen
 
-# Excel-Datei erstellen
-df_xlsx = to_excel(df_excel)
 
 # Download-Button
 st.download_button(label='Export your data',
