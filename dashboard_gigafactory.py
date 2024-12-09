@@ -146,10 +146,9 @@ with header_container:
             with battery1:
                 st.metric(label=":material/conveyor_belt: Actual Production Capacity [GWh/a]", value=round((production_capacity*production_day_factor_315),2), help="As you maybe haven't noticed yet, the production capacity you set in the sidebar actually refers to 315 production days. If you set your number lower or higher than that, this metric displays your actual production capacity that is used to calculate the values below. :)")
             with battery2:
-                st.metric(label=":material/battery_unknown: Cell Format", value=cell_format)
-            with battery3:
                 st.metric(label=":material/calendar_month: Production Days", value=production_days)
-                
+            with battery3:
+                st.metric(label=":material/dew_point: Dew Point Temperature [°C]", value=production_days)
 
 #-----popover---------------------------------------------------
 
