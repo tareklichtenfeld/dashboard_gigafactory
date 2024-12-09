@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import io
 import pydeck as pdk
 from geopy.geocoders import Nominatim
+from io import BytesIO
 
 # Page setting
 st.set_page_config(page_title="Gigafactory-Skalierungstool",
@@ -790,12 +791,55 @@ container_c = st.container(border=True)
 with container_c:
     st.subheader(":material/analytics: Additional Information")
     b5, b6, b7, b8 = st.columns(4)
-    b5.metric(":material/eco: CO2-emissions [kilotons/year]",round((natural_gas_emissions_kilotons),1))
-    b6.metric(":material/eco: CO2-emissions factor [kg/kWh]",round((natural_gas_emissions_kilotons/(production_capacity*production_day_factor_315)),2))
+    b5.metric(":material/eco: CO2-emissions [kilotons/year]",round((natural_gas_emissions_kilotons),1), help="This metric considers the CO2 emissions from both your local electricity supply and natural gas consumption.")
+    b6.metric(":material/eco: CO2-emissions factor [kg/kWh]",round((natural_gas_emissions_kilotons/(production_capacity*production_day_factor_315)),2), help="This metric considers the CO2 emissions from both your local electricity supply and natural gas consumption.")
     b7.metric("Total Electricity Costs [Mio.€/GWh]", round(((((electricity_usage*10**6)*electricity_price)/(production_capacity*production_day_factor_315))/10**6),2))  
     b8.metric(":material/groups: People in Dry Rooms",int(MA_nach_Automatisierungsgrad((MA_in_RuT(production_capacity, cell_format)))))
 
+#Excel-Export-------------
+def to_excel(df):
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    df.to_excel(writer, index=False, sheet_name='Sheet1')
+    workbook = writer.book
+    worksheet = writer.sheets['Sheet1']
+    # Optionale Formatierung (hier als Beispiel für Zahlenformatierung)
+    format1 = workbook.add_format({'num_format': '0.00'})
+    worksheet.set_column('A:A', None, format1)  
+    writer.save()
+    processed_data = output.getvalue()
+    return processed_data
 
+# Beispiel DataFrame (ersetze dies mit deinen eigenen Daten)
+
+data_excel = {
+  "YOUR FACTORY": ["Location", "Cell Format", "Production Capacity [GWh/a]", "Production Days", "Dew Point [°C]", "", "", "", ""],
+  "": ["location", "cell_format", "production_capacity", "production_days", "dew_point", "", "", "", ""],
+  "": ["", "", "", "", "", "", "", "", ""],
+  "Key Values": ["Energy Factor", "Estimated Connection Power ", "Electricity Input [GWh/a]", "Natural Gas Input [mio. m³/a]", "", "", "", "", ""],
+  "": ["energy_factor", "connection_power", "electricity input", "natural_gas_usage", "", "", "", "", ""],
+  "": ["", "", "", "", "", "", "", "", ""],
+  "Overall Energy Usage by type": ["Heat energy output [GWh/a]", "Cooling energy output [GWh/a]", "Electrical energy output [GWh/a]", "Total energy output [GWh/a]", "", "", "", "", ""],
+  "": ["gesamt_w_nutz", "gesamt_k_nutz", "gesamt_s_nutz", "gesamtfabrik_ges_nutz", "", "", "", "", ""],
+  "": ["", "", "", "", "", "", "", "", ""],
+  "Additional Information": [" CO2-emissions [kilotons/year]", " CO2-emissions factor [kg/kWh]", "Total Electricity Costs [mio.€/GWh]", " People in Dry Rooms", "", "", "", "", ""],
+  "": ["co2_emissions", "emission_factor", "electricity_costs", "people in dry rooms", "", "", "", "", ""],
+  "": ["", "", "", "", "", "", "", "", ""]
+}
+
+df_excel = pd.DataFrame(data_excel)
+
+# Streamlit-App
+st.title("Excel-Export in Streamlit")
+st.write(df_excel)  # DataFrame anzeigen
+
+# Excel-Datei erstellen
+df_xlsx = to_excel(df_excel)
+
+# Download-Button
+st.download_button(label='Export your data',
+                    data=df_xlsx,
+                    file_name='Gigafactory_Builder.xlsx')
 
 #---------Row D - SANKEY DIAGRAM-----------------------------------------------------
 #-----define sankey states-------------------------------------------------------
