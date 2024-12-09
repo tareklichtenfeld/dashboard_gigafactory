@@ -20,30 +20,26 @@ with open('style.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 st.logo("Gigafactory Builder Logo.png", size="large")
-#-----test map 2-----------------------------------------------------------
-# Center coordinates (adjust as needed)
 
 
 #-----SIDEBAAARRR----------------------------------------------------------
-st.sidebar.header('selectable planning parameters')
 
 #-----INFO BUTTON-----------------------------------
-with st.sidebar.expander('**:material/info: What do the buttons mean?**'):
-    st.markdown("**Location:** Sets the location of your gigafactory. The climate of the location can drastically change the energy demand of the factory.")
-    st.markdown("**Production Capacity:** Determines how much battery capacity will be produced in your factory per year. ")
-    st.markdown("**Cell Format:** Different cell formats have different manufacturing steps and requirements. Choose between the three most common formats.")
-    st.markdown("**Automation Degree:** Depending on the degree of automation, more or less people are working in the dry rooms, which also has an impact on energy demand. ")
-    st.markdown("**Cell Chemistry** Every cell chemistry has different requirements for the dry room and manufacturing steps. ")
-    st.markdown("**Production Days per Year:** How many days is your factory running on full manufacturing capacity? If you set this to less than 315 days, the production capacity has to be seen as theoretical, as there of course will be less battery cells produced if you have fewer production days.")
-    st.markdown("**Energy Concept:** The energy concept defines where the energy is coming from. Depending on your choice, the heat output is generated with electricity through a heat pump, or with natural gas. ")
-    st.markdown("**Weather Reference Year:** Experimental feature that changes the reference year the Gigafactory Builder uses to calculate the energy demand of the process steps depending on outside temperature.")
+with st.sidebar.expander("**:material/info: Introduction**"):
+    st.markdown("**Welcome to the Gigafactory Builder.** The Gigafactory Builder is an interactive planning tool for battery cell factories which is designed to support planners, decision-makers, and other stakeholders in early planning phases. It provides a scientifically sound, neutral basis for decision-making.")
+    st.markdown("The Fraunhofer Research Institution for Battery Cell Production FFB offers this tool, which is based on the latest findings and calculations as well as a deep understanding of the processes in battery cell production.")
+    st.markdown("If you have any questions, please feel free to contact us and we will try to find an answer or a solution together.")
+
+st.sidebar.header('selectable planning parameters')
 
 #-----GET GEOPY LOCATION COORDINATES-----------------------------------------------------------
 location_geopy= st.sidebar.text_input("**:material/location_on: location**","Münster", help="Sets the location of your gigafactory. The climate of the location can drastically change the energy demand of the factory.")
 
 geolocator = Nominatim(user_agent="user_agent")
-location = geolocator.geocode(f"{location_geopy}")
+location = geolocator.geocode(f"{location_geopy}",exactly_one=True, language="en", namedetails=True, addressdetails=True)
+country_code = location.raw['address']['country_code']
 st.sidebar.write(location.address)
+
 
 lat = location.latitude
 lon = location.longitude
@@ -85,58 +81,75 @@ map = pdk.Deck(
 
 st.sidebar.pydeck_chart(map, height=250)
 
+
 #----------------------------------------------------------------------------------------------------------
 
 with st.sidebar.container(border=True):
-    production_capacity= st.sidebar.slider('**production capacity [GWh/a]**', 5, 150, 40,help="Determines how much battery capacity will be produced in your factory per year. This value assumes 315 production days. If you change the production days, you will see the actual value change in the blue box. :D")
-cell_format = st.sidebar.selectbox('**cell format**', ('Pouch', 'Cylindrical', 'Prismatic'))
-automation_degree = st.sidebar.selectbox('**degree of automation**',('low','normal','high'))
-dew_point = st.sidebar.selectbox('**dew point in dry rooms**',('-60 °C','-50 °C','-40 °C'))
-production_days = st.sidebar.slider('**production days per year**', 1, 365, 315)
-energy_concept = st.sidebar.selectbox('**energy concept**', ('Natural Gas Boiler', 'Cogeneration Unit', 'Heat Pump', 'Hybrid Heat Pump')) 
+    production_capacity= st.sidebar.slider('**production capacity [GWh/a]**', 5, 150, 40, help="Determines how much battery capacity will be produced in your factory per year. This value assumes 315 production days. If you change the production days, you will see the actual value change in the blue box. :D")
+cell_format = st.sidebar.selectbox('**cell format**', ('Pouch', 'Cylindrical', 'Prismatic'), help="Different cell formats have different manufacturing steps and requirements. Choose between the three most common formats.")
+automation_degree = st.sidebar.selectbox('**degree of automation**',('low','normal','high'), help="Depending on the degree of automation, more or less people are working in the dry rooms, which also has an impact on energy demand.")
+dew_point = st.sidebar.selectbox('**dew point in dry rooms**',('-60 °C','-50 °C','-40 °C'), help="The dew point in the dry rooms are different for different cell chemistries.")
+production_days = st.sidebar.slider('**production days per year**', 1, 365, 315, help="How many days is your factory running on full manufacturing capacity? If you set this to less than 315 days, the production capacity has to be seen as theoretical, as there of course will be less battery cells produced if you have fewer production days.")
+energy_concept = st.sidebar.selectbox('**energy concept**', ('Natural Gas Boiler', 'Cogeneration Unit', 'Heat Pump', 'Hybrid Heat Pump'), help="The energy concept defines where the energy is coming from. Depending on your choice, the heat output is generated with electricity through a heat pump, or with natural gas.") 
 st.sidebar.subheader('Developer Options')
-year = st.sidebar.slider('**weather reference year**', 2003, 2023, 2023)
-electricity_price=st.sidebar.slider('Electricity Price in €/kWh',0.05,0.50,0.15)
+year = st.sidebar.slider('**weather reference year**', 2003, 2023, 2023, help="Experimental feature that changes the reference year the Gigafactory Builder uses to calculate the energy demand of the process steps depending on outside temperature.")
+electricity_price=st.sidebar.slider('Electricity Price in €/kWh',0.05,0.50,0.15, help="The price of electricity determines the cost of energy.")
 
 
 st.sidebar.markdown('''
 ---
-Created by Tarek Lichtenfeld :)
+Created by Fraunhofer FFB
 ''')
 
 st.sidebar.link_button("Fraunhofer FFB","https://www.ffb.fraunhofer.de/",use_container_width=True)
-st.sidebar.markdown('<a href="mailto:tarek.folker.bo.lichtenfeld@ffb.fraunhofer.de">Contact me :D</a>', unsafe_allow_html=True)
 
 #----input for displayed production capacity-----------------------------
 production_day_factor_315 = production_days/315
+
 #-----HEADER------------------------------------------------------------------
-header1, header2 = st.columns([2,5])
-with header1:
-    st.header('Gigafactory `Builder`')
-    with st.popover("First Time? 👋"):
-        st.write("Hey there 👋🏻")
-        st.write("I'm Tarek and I created this interactive dashboard to visualize and compare the power-input and -output of gigafactories for battery cell production. The sidebar on the left side of the screen contains all the parameters that can be changed to your preferences. Do you want to build a 100 GWh gigafactory on the Bahamas but you want low carbon dioxide emissions? Just choose the location and energy concept and you'll immediately notice the drastic impact your decisions have on the power consumption. Feel free to play around and test out the countless combinations of input parameters.")
-        st.write("Enjoy :)")
-with header2:
-    with stylable_container(
-            key="top_battery",
-            css_styles="""
-                button {
-                    background-color: #83d1a1;
-                    padding: 2% 2% 2% 2%;
-                    border-width: 5px;
-                    border-radius: 20px;
-                }
-                """
-        ):
-        st.subheader(":material/factory: Your Factory")
-        battery1, battery2, battery3 = st.columns(3)
-        with battery1:
-            st.metric(label=":material/conveyor_belt: Actual Production Capacity [GWh/a]", value=round((production_capacity*production_day_factor_315),2), help="As you maybe haven't noticed yet, the production capacity you set in the sidebar actually refers to 315 production days. If you set your number lower or higher than that, this metric displays your actual production capacity that is used to calculate the values below. :)")
-        with battery2:
-            st.metric(label=":material/battery_unknown: Cell Format", value=cell_format)
-        with battery3:
-            st.metric(label=":material/calendar_month: Production Days", value=production_days)
+header_container = st.container(border=True)
+with header_container:
+    header1, header2 = st.columns([2,5])
+    with header1:
+        with stylable_container(
+                key="top_battery",
+                css_styles="""
+                    button {
+                        background-color: #83d1a1;
+                        padding: 2% 2% 2% 2%;
+                        border-width: 5px;
+                        border-radius: 20px;
+                    }
+                    """
+            ):
+            st.image("GigaFactory_Builder_Logo_Entwurf.png")
+    with header2:
+        with stylable_container(
+                key="top_battery",
+                css_styles="""
+                    button {
+                        background-color: #83d1a1;
+                        padding: 2% 2% 2% 2%;
+                        border-width: 5px;
+                        border-radius: 20px;
+                    }
+                    """
+            ):
+            st.subheader(":material/factory: Your Factory")
+            
+            battery5, battery6 = st.columns(2)
+            with battery5:
+                st.metric(label=":material/conveyor_belt: Location", value=f"{location.address}", help="As you maybe haven't noticed yet, the production capacity you set in the sidebar actually refers to 315 production days. If you set your number lower or higher than that, this metric displays your actual production capacity that is used to calculate the values below. :)")
+            with battery6:
+                st.metric(label=":material/battery_unknown: Cell Format", value=cell_format)
+            battery1, battery2, battery3 = st.columns(3)
+            with battery1:
+                st.metric(label=":material/conveyor_belt: Actual Production Capacity [GWh/a]", value=round((production_capacity*production_day_factor_315),2), help="As you maybe haven't noticed yet, the production capacity you set in the sidebar actually refers to 315 production days. If you set your number lower or higher than that, this metric displays your actual production capacity that is used to calculate the values below. :)")
+            with battery2:
+                st.metric(label=":material/battery_unknown: Cell Format", value=cell_format)
+            with battery3:
+                st.metric(label=":material/calendar_month: Production Days", value=production_days)
+                
 
 #-----popover---------------------------------------------------
 
@@ -682,9 +695,18 @@ def co2_natual_gas(x):
     kg_co2_GWh = 0.24 * 10**6
     return(kg_co2_GWh * x)
 
-#-----Strom-Emissionen nach dt. Strommix.-------------------------
+#-----Strom-Emissionen des Strommix nach country_code-------------------------
+# Fetch the data.
+df_co2 = pd.read_csv("co2_emission_factors.csv") #emissions in kg/kWh
+
+# CO2-Emissionen abrufen
+co2_emissions = df_co2[df_co2["Code"] == country_code.upper()]["emissions"] #upper() um country_code in Großbuchstaben umzuwandeln
+
+# In Streamlit anzeigen
+
+
 def co2_electric(x):
-    kg_co2_GWh= 0.38 * 10**6
+    kg_co2_GWh = 10**6 * co2_emissions
     return(x*kg_co2_GWh)
 
 
@@ -759,19 +781,21 @@ container_b = st.container(border=True)
 with container_b:
     st.subheader(":material/cool_to_dry: Dry Room Energy Usage")
     b1, b2, b3, b4 = st.columns(4)
-    b1.metric(":material/heat: Heat energy usage [GWh/a]",round(RuT_GWh_w_nutz,2),help="Contradictory to what one would expect, the heat usage is actually higher in warm locations.")
+    b1.metric(":material/heat: Heat energy usage [GWh/a]",round(RuT_GWh_w_nutz,2))
     b2.metric(":material/mode_cool: Cooling energy usage [GWh/a]",round(RuT_GWh_k_nutz,2))
     b3.metric(":material/bolt: Electrical energy usage [GWh/a]",round(RuT_GWh_s_nutz,2))
-    b4.metric("Total energy usage [GWh/a]", f"{round((RuT_GWh_w_nutz+RuT_GWh_k_nutz+RuT_GWh_s_nutz),2)}")
+    b4.metric(":material/input: Total energy input [GWh/a]", f"{round((RuT_GWh_w_end+RuT_GWh_k_end+RuT_GWh_s_end),2)}")
     
 #-----row b2---------------------------------------------------------------
 container_c = st.container(border=True)
 with container_c:
     st.subheader(":material/analytics: Additional Information")
-    b5, b6, b7 = st.columns(3)
-    b5.metric(":material/nature: CO2-emissions [kilotons/year]",round((natural_gas_emissions_kilotons),1))
-    b6.metric("Total Electricity Costs [Mio.€/GWh]", round(((((electricity_usage*10**6)*electricity_price)/(production_capacity*production_day_factor_315))/10**6),2))  
-    b7.metric(":material/groups: People in Dry Rooms",int(MA_nach_Automatisierungsgrad((MA_in_RuT(production_capacity, cell_format)))))
+    b5, b6, b7, b8 = st.columns(4)
+    b5.metric(":material/eco: CO2-emissions [kilotons/year]",round((natural_gas_emissions_kilotons),1))
+    b6.metric(":material/eco: CO2-emissions factor [kg/kWh]",round((natural_gas_emissions_kilotons/(production_capacity*production_day_factor_315)),2))
+    b7.metric("Total Electricity Costs [Mio.€/GWh]", round(((((electricity_usage*10**6)*electricity_price)/(production_capacity*production_day_factor_315))/10**6),2))  
+    b8.metric(":material/groups: People in Dry Rooms",int(MA_nach_Automatisierungsgrad((MA_in_RuT(production_capacity, cell_format)))))
+
 
 
 #---------Row D - SANKEY DIAGRAM-----------------------------------------------------
@@ -856,5 +880,5 @@ end1, end2 = st.columns([7,3])
     #with st.container(border=True):
         #st.image("Gigafactory Builder Logo.png")
 with end2:
-    st.markdown("`Created by Tarek Lichtenfeld, October 2024`")
-#--------------------------by tarek lichtenfeld, october 2024------------------------------------
+    st.markdown("`Created by Fraunhofer FFB`")
+#--------------------------by tarek lichtenfeld, december 2024------------------------------------

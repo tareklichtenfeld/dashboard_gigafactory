@@ -1,3 +1,21 @@
+@font-face{
+  font-family: "Frutiger";
+  src: url("https://db.onlinewebfonts.com/t/0c453315c27507762e6b9536cfea76a6.eot");
+  src: url("https://db.onlinewebfonts.com/t/0c453315c27507762e6b9536cfea76a6.eot?#iefix")format("embedded-opentype"),
+      url("https://db.onlinewebfonts.com/t/0c453315c27507762e6b9536cfea76a6.woff")format("woff"),
+      url("https://db.onlinewebfonts.com/t/0c453315c27507762e6b9536cfea76a6.woff2")format("woff2"),
+      url("https://db.onlinewebfonts.com/t/0c453315c27507762e6b9536cfea76a6.ttf")format("truetype"),
+      url("https://db.onlinewebfonts.com/t/0c453315c27507762e6b9536cfea76a6.svg#Frutiger")format("svg");
+  font-weight:normal;
+  font-style:normal;
+  font-display:swap;
+}
+
+body {
+  font-family: 'Frutiger', sans-serif;
+}
+
+
 /* Move block container higher */
 div.block-container.st-emotion-cache-1jicfl2.ea3mdgi5 {
   margin-top: 1em;
@@ -18,7 +36,7 @@ div.css-1ht1j8u.e16fv1kl0 {
 
 /*button explanation*/
 div.st-emotion-cache-1m3plho.ef3psqc13{
-  background-color: #fdff8c;
+  background-color: #DBE4EA;
 }
 
 /* Third line of Row */
@@ -29,16 +47,43 @@ div.css-wnm74r.e16fv1kl3 {
 
 /* popup window */ 
 div.st-emotion-cache-jpcrdf.e1f1d6gn2 {
-  background-color: #fdff8c;
+  background-color: #DBE4EA;
   padding: 1% 1% 1% 1%;
   border-width: 5px;
   border-radius: 5px;
   border-color: purple;
 }
 
-/*Your Factory header (mit Stats)*/
+/*div.stMetric{
+  background-color: #DBE4EA;
+  padding: 1% 1% 1% 1%;
+  border-width: 7px;
+  border-radius: 20px;
+  border-color: purple;
+}
+*/
+
+/*first row in YOUR FACTORY header*/
+div.stColumn.st-emotion-cache-keje6w.e1f1d6gn3 {
+  background-color: #DBE4EA;
+  padding: 1% 1% 1% 1%;
+  border-width: 20px;
+  border-radius: 15px;
+  border-color: purple;
+}
+
+/* second row in YOUR FACTORY header */
+div.st-emotion-cache-1r6slb0.e1f1d6gn3 {
+  background-color: #DBE4EA;
+  padding: 1% 1% 1% 1%;
+  border-width: 20px;
+  border-radius: 15px;
+  border-color: purple;
+}
+
+/*Your Factory header (box around it)*/
 div.stColumn.st-emotion-cache-6vw1hb.e1f1d6gn3 {
-  background-color: #7f8acc;
+  background-color: #C39CAA;
   padding: 2% 2% 2% 2%;
   border-width: 5px;
   border-radius: 20px;
@@ -46,15 +91,16 @@ div.stColumn.st-emotion-cache-6vw1hb.e1f1d6gn3 {
 
 /* Boxen um die Fenster*/
 div.st-emotion-cache-a8yfru.e1f1d6gn0 {
-  background-color: #83d1a1;
+  background-color: #66bfaf;
   padding: 2% 2% 2% 2%;
   border-width: 5px;
   border-radius: 20px;
+  border-color: #1f9578;
 }
 
 /*Textinput-Umrahmung*/
 div.stTextInput {
-  background-color: #83d1a1;
+  background-color: #66bfaf;
   padding: 3% 3% 3% 3%;
   border-width: 5px;
   border-radius: 20px;
@@ -62,7 +108,7 @@ div.stTextInput {
 
 /*selectboxen-Umrahmung*/
 div.stSelectbox {
-  background-color: #83d1a1;
+  background-color: #66bfaf;
   padding: 3% 3% 3% 3%;
   border-width: 5px;
   border-radius: 20px;
@@ -70,23 +116,16 @@ div.stSelectbox {
 
 /*Slider-Umrahmung*/
 div.stSlider {
-  background-color: #83d1a1;
+  background-color: #66bfaf;
   padding: 3% 3% 3% 3%;
   border-width: 5px;
   border-radius: 20px;
 }
-/* Row 1 */
-div.st-emotion-cache-1r6slb0.e1f1d6gn3 {
-    background-color: #fdff8c;
-    padding: 1% 1% 1% 1%;
-    border-width: 20px;
-    border-radius: 15px;
-    border-color: purple;
-}
+
 
 /* Row 2 */
 div.st-emotion-cache-12w0qpk.e1f1d6gn3 {
-  background-color: #fdff8c;
+  background-color: #C4D8E7;
   padding: 1% 1% 1% 1%;
   border-width: 20px;
   border-radius: 15px;
@@ -94,7 +133,7 @@ div.st-emotion-cache-12w0qpk.e1f1d6gn3 {
 }
 /*image at bottom*/
 div.img {
-  background-color: #fdff8c;
+  background-color: #FCE3A8;
   padding: 3% 3% 3% 3%;
   border-width: 5px;
   border-radius: 20px;
@@ -106,7 +145,7 @@ div.st-emotion-cache-1l8gdore1nzilvr4 {
 
 /*Sankey Plot WHite Background*/
 div.st-emotion-cache-1v0mbdj.e115fcil1 {
-  background-color: white;
+  background-color: #237094;
   padding: 3% 3% 3% 3%;
   border-width: 20px;
   border-radius: 20px;
