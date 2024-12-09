@@ -108,6 +108,17 @@ st.sidebar.link_button("Fraunhofer FFB","https://www.ffb.fraunhofer.de/",use_con
 #----input for displayed production capacity-----------------------------
 production_day_factor_315 = production_days/315
 
+#Ausgabe vom Standort - nach Stadt - Bundesland - Staat -Reihenfolge
+if location and 'city' in location.raw['address']:
+    city = location.raw['address']['city']
+else:
+    if location and "state" in location.raw["address"]:
+        city = location.raw['address']['state']
+    else: 
+        if location and "country" in location.raw["address"]:
+            city = location.raw['address']['country']
+        else: 
+            city = "undefined"
 #-----HEADER------------------------------------------------------------------
 header_container = st.container(border=True)
 with header_container:
@@ -141,7 +152,7 @@ with header_container:
             
             battery5, battery6 = st.columns(2)
             with battery5:
-                st.metric(label=":material/conveyor_belt: Location", value=f"{location.address}", help="The location of you factory based on your input.")
+                st.metric(label=":material/conveyor_belt: Location", value=f"{city}", help="The location of you factory based on your input.")
             with battery6:
                 st.metric(label=":material/battery_unknown: Cell Format", value=cell_format, help="The cell format you chose.")
             battery1, battery2, battery3 = st.columns(3)
@@ -804,43 +815,66 @@ def to_excel(df):
     df.to_excel(writer, index=False, sheet_name='Sheet1')
     workbook = writer.book
     worksheet = writer.sheets['Sheet1']
-    format1 = workbook.add_format({'num_format': '0.00'}) 
-    worksheet.set_column('A:A', None, format1)  
-    writer.save()
+    
+    number_format = workbook.add_format({'num_format': '0.00'})
+    bold_format = workbook.add_format({'bold': True,'align': 'left'})
+    header_format = workbook.add_format({'bold': True,'align': 'center'})
+    header_format.set_font_size(14) 
+    
+    worksheet.set_column('A:A', None, number_format)
+    
+    # Spaltenbreiten festlegen
+    worksheet.set_column('A:A', 25, bold_format, {"left": 1})
+    worksheet.set_column('B:B', 45)
+    worksheet.set_column('C:C', 25, bold_format, {"left": 1})
+    worksheet.set_column('E:E', 28, bold_format, {"left": 1})
+    worksheet.set_column('G:G', 30, bold_format, {"left": 1})
+    
+    # ... Zellen verbinden - Überschriften ...
+    worksheet.merge_range('A1:B1', 'YOUR FACTORY', header_format)
+    worksheet.merge_range('C1:D1', 'Key Values', header_format)
+    worksheet.merge_range('E1:F1', 'Overall Energy Usage by type', header_format)
+    worksheet.merge_range('G1:H1', 'Additional Information', header_format)
+
+        # Rahmenlinien zu allen Zellen hinzufügen
+    for col_num, value in enumerate(df.columns.values):
+        worksheet.write(0, col_num, value, header_format)
+    
+    # Formatierung für Rahmenlinien
+    border_format = workbook.add_format({'border': 1})
+    
+    # Den Bereich ermitteln, der formatiert werden soll 
+    (max_row, max_col) = df.shape
+    worksheet.conditional_format(0, 0, max_row, max_col, {'type': 'no_errors', 'format': border_format})
+
+    writer.close()
+    processed_data = output.getvalue()
+    return processed_data
+    
+    writer.close()
     processed_data = output.getvalue()
     return processed_data
 
 # Beispiel DataFrame (ersetze dies mit deinen eigenen Daten)
 
 data_excel = {
-  "YOUR FACTORY": ["Location", "Cell Format", "Production Capacity [GWh/a]", "Production Days", "Dew Point [°C]", "", "", "", ""],
-  "": ["location", "cell_format", "production_capacity", "production_days", "dew_point", "", "", "", ""],
-  "": ["", "", "", "", "", "", "", "", ""],
-  "Key Values": ["Energy Factor", "Estimated Connection Power ", "Electricity Input [GWh/a]", "Natural Gas Input [mio. m³/a]", "", "", "", "", ""],
-  "": ["energy_factor", "connection_power", "electricity input", "natural_gas_usage", "", "", "", "", ""],
-  "": ["", "", "", "", "", "", "", "", ""],
-  "Overall Energy Usage by type": ["Heat energy output [GWh/a]", "Cooling energy output [GWh/a]", "Electrical energy output [GWh/a]", "Total energy output [GWh/a]", "", "", "", "", ""],
-  "": ["gesamt_w_nutz", "gesamt_k_nutz", "gesamt_s_nutz", "gesamtfabrik_ges_nutz", "", "", "", "", ""],
-  "": ["", "", "", "", "", "", "", "", ""],
-  "Additional Information": [" CO2-emissions [kilotons/year]", " CO2-emissions factor [kg/kWh]", "Total Electricity Costs [mio.€/GWh]", " People in Dry Rooms", "", "", "", "", ""],
-  "": ["co2_emissions", "emission_factor", "electricity_costs", "people in dry rooms", "", "", "", "", ""],
-  "": ["", "", "", "", "", "", "", "", ""]
+  "YOUR FACTORY": ["Location", "Cell Format", "Production Capacity [GWh/a]", "Production Days", "Dew Point [°C]"],
+  "-": [location.address, cell_format, production_capacity, production_days, dew_point],
+  "Key Values": ["Energy Factor", "Estimated Connection Power ", "Electricity Input [GWh/a]", "Natural Gas Input [mio. m³/a]", ""],
+  "--": [energiefaktor, ((((gesamtfabrik_ges_end-natural_gas_usage)/8760)*1.2)*10**3), gesamtfabrik_ges_end-natural_gas_usage, mio_cubic_meters, ""],
+  "Overall Energy Usage by type": ["Heat energy output [GWh/a]", "Cooling energy output [GWh/a]", "Electrical energy output [GWh/a]", "Total energy output [GWh/a]", ""],
+  "---": [gesamtfabrik_w_nutz, gesamtfabrik_k_nutz, gesamtfabrik_s_nutz, gesamtfabrik_ges_nutz, ""],
+  "Additional Information": [" CO2-emissions [kilotons/year]", " CO2-emissions factor [kg/kWh]", "Total Electricity Costs [mio.€/GWh]", " People in Dry Rooms", ""],
+  "----": [float(natural_gas_emissions_kilotons), float(natural_gas_emissions_kilotons/(production_capacity*production_day_factor_315)), ((((electricity_usage*10**6)*electricity_price)/(production_capacity*production_day_factor_315))/10**6), int(MA_nach_Automatisierungsgrad((MA_in_RuT(production_capacity, cell_format)))), ""],
 }
 
-df_xlsx = to_excel(data_excel)
-st.title("Excel-Export in Streamlit")
+df_excel = pd.DataFrame(data_excel)  # DataFrame erstellen
+df_xlsx = to_excel(df_excel)
+st.title("Export to Excel")
 st.download_button(label='📥 Download Current Results',
                                 data=df_xlsx ,
-                                file_name= 'df_test.xlsx')
-df_excel = pd.DataFrame(data_excel)
+                                file_name= f"Gigafactory_Builder_Export_{city}_{production_capacity}GWh_{cell_format}.xlsx")
 
-# Streamlit-App
-
-
-# Download-Button
-st.download_button(label='Export your data',
-                    data=df_xlsx,
-                    file_name='Gigafactory_Builder.xlsx')
 
 #---------Row D - SANKEY DIAGRAM-----------------------------------------------------
 #-----define sankey states-------------------------------------------------------
