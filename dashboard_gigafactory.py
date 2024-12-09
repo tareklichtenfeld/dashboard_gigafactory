@@ -135,7 +135,7 @@ with header_container:
                     }
                     """
             ):
-            st.subheader(":material/battery_charging_full: Your Factory")
+            st.subheader(":material/battery_charging_full: Your Factory", help="This area contains the basic information about your battery cell gigafactory based on the input in the sidebar.")
             
             battery5, battery6 = st.columns(2)
             with battery5:
