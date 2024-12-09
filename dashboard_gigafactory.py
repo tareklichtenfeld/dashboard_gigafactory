@@ -148,7 +148,7 @@ with header_container:
             with battery2:
                 st.metric(label=":material/calendar_month: Production Days", value=production_days)
             with battery3:
-                st.metric(label=":material/dew_point: Dew Point Temperature [°C]", value=production_days)
+                st.metric(label=":material/dew_point: Dew Point Temperature [°C]", value=dew_point)
 
 #-----popover---------------------------------------------------
 
