@@ -14,9 +14,9 @@ from io import BytesIO
 from pyxlsb import open_workbook as open_xlsb
 
 # Page setting
-st.set_page_config(page_title="Gigafactory-Skalierungstool",
+st.set_page_config(page_title="Gigafactory Builder",
                    layout="wide",
-                   page_icon=":battery:")
+                   page_icon="Giga_Builder_logo_small.png")
 
 with open('style.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
