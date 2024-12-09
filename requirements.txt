@@ -4,7 +4,7 @@ meteostat==1.6.8
 numpy==2.2.0
 pandas==2.2.3
 pydeck==0.9.1
+pyxlsb==1.0.10
 sankeyflow==0.4.1
 streamlit==1.40.2
 streamlit_extras==0.5.0
-XlsxWriter==3.2.0
