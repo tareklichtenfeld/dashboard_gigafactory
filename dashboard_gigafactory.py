@@ -12,6 +12,10 @@ import pydeck as pdk
 from geopy.geocoders import Nominatim
 from io import BytesIO
 from pyxlsb import open_workbook as open_xlsb
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
+from openpyxl.utils.dataframe import dataframe_to_rows 
+
 
 # Page setting
 st.set_page_config(page_title="Gigafactory Builder",
@@ -35,10 +39,14 @@ with st.sidebar.expander("**:material/info: Introduction**"):
 st.sidebar.header('selectable planning parameters')
 
 #-----GET GEOPY LOCATION COORDINATES-----------------------------------------------------------
+# ... location input ...
 location_geopy= st.sidebar.text_input("**:material/location_on: location**","Münster", help="Sets the location of your gigafactory. The climate of the location can drastically change the energy demand of the factory.")
 
+# ... find location coordinates via geocode ...
 geolocator = Nominatim(user_agent="user_agent")
 location = geolocator.geocode(f"{location_geopy}",exactly_one=True, language="en", namedetails=True, addressdetails=True)
+
+#-----COUNTRY CODE---------------------------------
 country_code = location.raw['address']['country_code']
 st.sidebar.write(location.address)
 
@@ -46,8 +54,6 @@ st.sidebar.write(location.address)
 lat = location.latitude
 lon = location.longitude
 
-
-#-----COUNTRY CODE---------------------------------
 
 
 #-----Display the map----------------------------------------------------------------------
@@ -809,52 +815,104 @@ with container_c:
     b8.metric(":material/groups: People in Dry Rooms",int(MA_nach_Automatisierungsgrad((MA_in_RuT(production_capacity, cell_format)))))
 
 #Excel-Export-------------
-def to_excel(df):
+def to_excel_openpyxl(df):
     output = BytesIO()
-    writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    df.to_excel(writer, index=False, sheet_name='Sheet1')
-    workbook = writer.book
-    worksheet = writer.sheets['Sheet1']
-    
-    number_format = workbook.add_format({'num_format': '0.00'})
-    bold_format = workbook.add_format({'bold': True,'align': 'left'})
-    header_format = workbook.add_format({'bold': True,'align': 'center'})
-    header_format.set_font_size(14) 
-    
-    worksheet.set_column('A:A', None, number_format)
-    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Sheet1'
+
+    # Daten in das Worksheet schreiben
+    for r in dataframe_to_rows(df, index=False, header=True):
+        ws.append(r)
+
+    # Formatierungen definieren
+    number_format = '0.00'
+    bold_format = Font(bold=True)
+    header_format = Font(bold=True, size=14)
+    left_border = Border(left=Side(style='thick'))
+    left_border_thin = Border(left=Side(style='thin'))
+    bottom_border = Border(bottom=Side(style='thick'))
+    top_border = Border(top=Side(style='thick'))
+    orange_fill = PatternFill(start_color='F26B43', end_color='F26B43', fill_type='solid')
+    blue1_fill = PatternFill(start_color='03738C', end_color='03738C', fill_type='solid')
+    blue2_fill = PatternFill(start_color='0396A6', end_color='0396A6', fill_type='solid')
+    blue3_fill = PatternFill(start_color='08A696', end_color='08A696', fill_type='solid')
+
+    # Formatierungen anwenden
+    for row in ws.iter_rows():
+        for cell in row:
+            if cell.column_letter == 'A':
+                cell.number_format = number_format
+                cell.font = bold_format
+            if cell.column_letter == 'B':
+                cell.number_format = number_format
+                cell.border = left_border_thin
+            if cell.column_letter == 'C':
+                cell.font = bold_format
+                cell.border = left_border
+            if cell.column_letter == 'D':
+                cell.number_format = number_format
+                cell.border = left_border_thin
+            if cell.column_letter == 'E':
+                cell.font = bold_format
+                cell.border = left_border
+            if cell.column_letter == 'F':
+                cell.number_format = number_format
+                cell.border = left_border_thin
+            if cell.column_letter == 'G':
+                cell.font = bold_format
+                cell.border = left_border
+            if cell.column_letter == 'H':
+                cell.number_format = number_format
+                cell.border = left_border_thin
+            if cell.column_letter == 'I':
+                cell.number_format = number_format
+                cell.border = left_border
+
     # Spaltenbreiten festlegen
-    worksheet.set_column('A:A', 25, bold_format, {"left": 1})
-    worksheet.set_column('B:B', 45)
-    worksheet.set_column('C:C', 25, bold_format, {"left": 1})
-    worksheet.set_column('E:E', 28, bold_format, {"left": 1})
-    worksheet.set_column('G:G', 30, bold_format, {"left": 1})
-    
-    # ... Zellen verbinden - Überschriften ...
-    worksheet.merge_range('A1:B1', 'YOUR FACTORY', header_format)
-    worksheet.merge_range('C1:D1', 'Key Values', header_format)
-    worksheet.merge_range('E1:F1', 'Overall Energy Usage by type', header_format)
-    worksheet.merge_range('G1:H1', 'Additional Information', header_format)
+    ws.column_dimensions['A'].width = 25
+    ws.column_dimensions['B'].width = 45
+    ws.column_dimensions['C'].width = 25
+    ws.column_dimensions['E'].width = 28
+    ws.column_dimensions['G'].width = 30
 
-        # Rahmenlinien zu allen Zellen hinzufügen
-    for col_num, value in enumerate(df.columns.values):
-        worksheet.write(0, col_num, value, header_format)
-    
-    # Formatierung für Rahmenlinien
-    border_format = workbook.add_format({'border': 1})
-    
-    # Den Bereich ermitteln, der formatiert werden soll 
-    (max_row, max_col) = df.shape
-    worksheet.conditional_format(0, 0, max_row, max_col, {'type': 'no_errors', 'format': border_format})
+    # Zellen verbinden - Überschriften
+    ws.merge_cells('A1:B1')
+    ws['A1'] = 'YOUR FACTORY'
+    ws['A1'].font = header_format
+    ws['A1'].alignment = Alignment(horizontal='center')
+    ws['A1'].fill = orange_fill
 
-    writer.close()
+    ws.merge_cells('C1:D1')
+    ws['C1'] = 'Key Values'
+    ws['C1'].font = header_format
+    ws['C1'].alignment = Alignment(horizontal='center')
+    ws['C1'].fill = blue1_fill
+
+    ws.merge_cells('E1:F1')
+    ws['E1'] = 'Overall Energy Usage by type'
+    ws['E1'].font = header_format
+    ws['E1'].alignment = Alignment(horizontal='center')
+    ws['E1'].fill = blue2_fill
+
+    ws.merge_cells('G1:H1')
+    ws['G1'] = 'Additional Information'
+    ws['G1'].font = header_format
+    ws['G1'].alignment = Alignment(horizontal='center')
+    ws['G1'].fill = blue3_fill
+
+    # ... borders ...
+    for row in ws['A1:H1']:
+        for cell in row:
+            cell.border = bottom_border
+
+    for row in ws['A7:H7']:
+        for cell in row:
+            cell.border = top_border
+    
+    wb.save(output)
     processed_data = output.getvalue()
     return processed_data
-    
-    writer.close()
-    processed_data = output.getvalue()
-    return processed_data
-
 # Beispiel DataFrame (ersetze dies mit deinen eigenen Daten)
 
 data_excel = {
@@ -869,7 +927,7 @@ data_excel = {
 }
 
 df_excel = pd.DataFrame(data_excel)  # DataFrame erstellen
-df_xlsx = to_excel(df_excel)
+df_xlsx = to_excel_openpyxl(df_excel)
 st.title("Export to Excel")
 st.download_button(label='📥 Download Current Results',
                                 data=df_xlsx ,
